@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { font-family: "Inter", system-ui, sans-serif; }
+
+  /* Light mode body */
+  body {
+    @apply antialiased min-h-screen;
+    background: #FDF6EC;
+    color: #1A1210;
+    transition: background-color 300ms ease, color 300ms ease;
+  }
+  /* Dark mode body */
+  .dark body {
+    background: #1A1210;
+    color: #FDF6F0;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply rounded-full; background: #E0D5C8; }
+  .dark ::-webkit-scrollbar-thumb { background: #3A2E28; }
+
+  /* Override browser autofill background to preserve glass UI */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px transparent inset !important;
+    -webkit-text-fill-color: inherit !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
+
+@layer components {
+  /* LIGHT mode glass: subtle frosted blur */
+  .glass {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 24px rgba(210, 170, 130, 0.12), 0 1px 3px rgba(0,0,0,0.04);
+    transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+  }
+  /* DARK mode glass: subtle frosted blur */
+  .dark .glass {
+    background: rgba(20, 12, 10, 0.70);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 140, 90, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 140, 90, 0.08) 50%, transparent 100%);
+    background-size: 500px 100%;
+    animation: shimmer 1.8s infinite linear;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -500px 0; }
+  100% { background-position: 500px 0; }
+}
+
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.08); }
+  66% { transform: translate(-20px, 10px) scale(0.95); }
+}
+
+.animate-blob { animation: blob 12s infinite ease-in-out; }
+.animate-blob-slow { animation: blob 16s 4s infinite ease-in-out; }
