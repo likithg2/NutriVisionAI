@@ -31,7 +31,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', zIn
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className={`fixed inset-0 ${zIndex} flex ${placement === 'center' ? 'items-center' : 'items-start pt-[110px]'} justify-center p-4 pb-6`}>
+        <div className={`fixed inset-0 ${zIndex} flex ${placement === 'center' ? 'items-center pt-[100px]' : 'items-start pt-[110px]'} justify-center p-4 pb-6`}>
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
@@ -47,7 +47,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', zIn
             transition={{ duration: 0.2, ease: "easeOut" }}
             onClick={e => e.stopPropagation()}
             className={`relative flex flex-col w-full ${sizes[size]} rounded-2xl z-10 bg-white/70 dark:bg-[#1A1210]/70 backdrop-blur-3xl border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10`}
-            style={{ maxHeight: '90dvh' }}
+            style={{ maxHeight: 'calc(100vh - 130px)' }}
           >
             <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
               <h2 className="text-lg font-semibold flex-1 pr-4">{title}</h2>
