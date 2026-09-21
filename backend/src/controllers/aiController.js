@@ -28,7 +28,7 @@ if (process.env.GEMINI_API_KEY) {
   delete process.env.GOOGLE_API_KEY;
 }
 const API_KEY = process.env.GEMINI_API_KEY;
-let GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-3.7-flash").replace(/^models\//i, "").trim();
+let GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite").replace(/^models\//i, "").trim();
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const NEMOTRON_API_KEY = process.env.NEMOTRON_API_KEY;
 
@@ -42,11 +42,11 @@ async function generateAIResponse(prompt, providers = ['gemini', 'openai', 'nemo
     if (provider === 'gemini' && API_KEY) {
       try {
         console.log(`[AI] Attempting with Gemini...`);
-        const interaction = await aiClient.interactions.create({
+        const response = await aiClient.models.generateContent({
           model: GEMINI_MODEL,
-          input: prompt,
+          contents: prompt,
         });
-        return interaction.output_text;
+        return response.text;
       } catch (err) {
         console.error("Gemini API Error:", err.message);
       }

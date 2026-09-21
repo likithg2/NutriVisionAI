@@ -5,7 +5,7 @@ dotenv.config();
 import { GoogleGenAI } from "@google/genai";
 
 const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-let GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-3.7-flash").replace(/^models\//i, "").trim();
+let GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite").replace(/^models\//i, "").trim();
 
 const aiClient = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
@@ -49,12 +49,12 @@ export default async function llmFormatter(userMessage, contextItems = null) {
   const promptText = wrapPrompt(userMessage, contextItems);
 
   try {
-    const interaction = await aiClient.interactions.create({
+    const response = await aiClient.models.generateContent({
       model: GEMINI_MODEL,
-      input: promptText
+      contents: promptText
     });
 
-    const extracted = interaction.output_text;
+    const extracted = response.text;
 
     const output =
       extracted && typeof extracted === "string" && extracted.trim()

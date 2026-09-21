@@ -77,8 +77,8 @@ router.post("/estimate-food", express.json(), async (req, res) => {
       // AI Fallback
       const prompt = `Estimate the nutritional content for ${quantity || 100}g of "${foodName}". Return ONLY a valid JSON object (no markdown, no extra text) with the keys: "calories", "protein", "carbs", "fat" as numbers.`;
       try {
-        const response = await ai.models.generateContent({ model: "gemini-3.7-flash", contents: prompt });
-        let text = response.text().trim();
+        const response = await ai.models.generateContent({ model: "gemini-3.5-flash-lite", contents: prompt });
+        let text = (response.text || "").trim();
         if (text.startsWith("```json")) text = text.replace(/```json|```/g, "").trim();
         else if (text.startsWith("```")) text = text.replace(/```/g, "").trim();
         const aiData = JSON.parse(text);
