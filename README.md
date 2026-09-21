@@ -32,6 +32,13 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
   * Log exercises, workouts, and daily steps to balance your calorie intake.
   * View comprehensive insights into your fitness trends.
 
+* 💊 **Smart Medicine Tracking**
+  * Track your medicines inside the SmartShelf.
+  * Medicines are securely excluded from AI macro-analysis and recipe recommendations to ensure food safety and precision.
+
+* 🌍 **Global Translation (Native Integration)**
+  * Fully integrated Google Translate allows you to seamlessly view the entire application in your preferred language without intrusive ribbons.
+
 * 📱 **Responsive & Aesthetic UI**
   * Built with a modern, glassmorphism UI using Tailwind CSS and Framer Motion for buttery-smooth page transitions.
   * Full Dark/Light mode support.
