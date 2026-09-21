@@ -353,11 +353,6 @@ export default function Dashboard() {
       .filter(i => i._days <= 7)
       .sort((a, b) => a._days - b._days);
 
-    const totalCalories = items.reduce((s, i) => s + (Number(i.calories) || 0), 0);
-    const totalProtein = items.reduce((s, i) => s + (Number(i.protein) || 0), 0);
-    const totalCarbs = items.reduce((s, i) => s + (Number(i.carbs) || 0), 0);
-    const totalFat = items.reduce((s, i) => s + (Number(i.fat) || 0), 0);
-    
     const moneySaved = items
       .filter(i => {
         if (i.status !== "consumed") return false;
@@ -380,6 +375,9 @@ export default function Dashboard() {
     const todayEnd = new Date(todayStart); todayEnd.setDate(todayEnd.getDate() + 1);
     const todayLogs = historyLogs.filter(l => { const c = new Date(l.date); return c >= todayStart && c < todayEnd; });
     const todayCalories = todayLogs.reduce((s, l) => s + ((Number(l.calories) || 0) * (Number(l.servings) || 1)), 0);
+    const totalProtein = todayLogs.reduce((s, l) => s + ((Number(l.protein) || 0) * (Number(l.servings) || 1)), 0);
+    const totalCarbs = todayLogs.reduce((s, l) => s + ((Number(l.carbs) || 0) * (Number(l.servings) || 1)), 0);
+    const totalFat = todayLogs.reduce((s, l) => s + ((Number(l.fat) || 0) * (Number(l.servings) || 1)), 0);
 
     const streak = streakDays(activities);
 
