@@ -590,8 +590,8 @@ export default function CalorieTracker() {
       {/* Log Modal */}
       <AnimatePresence>
         {showLogModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="fixed inset-0 z-40 flex items-start justify-center p-4 pb-6 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" onClick={() => setShowLogModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-lg rounded-2xl z-10 bg-white/70 dark:bg-[#1A1210]/70 backdrop-blur-3xl border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10" style={{ marginTop: '120px', maxHeight: 'calc(100dvh - 140px)' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="fixed inset-0 z-40 flex items-center justify-center p-4 pb-6 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" onClick={() => setShowLogModal(false)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-lg rounded-2xl z-10 bg-white/70 dark:bg-[#1A1210]/70 backdrop-blur-3xl border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10" style={{ maxHeight: '90dvh' }}>
               <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
                 <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
                   Log a Meal
@@ -654,8 +654,8 @@ export default function CalorieTracker() {
       {/* Scan Options Modal */}
       <AnimatePresence>
         {showScanModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="fixed inset-0 z-40 flex items-start justify-center p-4 pb-6 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" onClick={() => setShowScanModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-sm backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10" style={{ marginTop: '110px' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="fixed inset-0 z-40 flex items-center justify-center p-4 pb-6 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" onClick={() => setShowScanModal(false)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-sm backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10">
               <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
                 <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
                   Scan Meal
