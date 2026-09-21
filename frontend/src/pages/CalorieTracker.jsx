@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import GlassCard from '../components/ui/GlassCard.jsx';
-import { Flame, Plus, Sparkles, ChefHat, Target, Camera, Loader2, AlertTriangle, Search as SearchIcon, Activity, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
+import { Flame, Plus, Sparkles, ChefHat, Target, Camera, Loader2, AlertTriangle, Search as SearchIcon, Activity, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Trash2, Check, CheckCircle2 } from 'lucide-react';
 import api from '../api/axios.js';
 import { estimateFood } from '../api/scanner.js';
 import MacroChart from '../components/charts/MacroChart.jsx';
@@ -44,13 +44,13 @@ export default function CalorieTracker() {
 
   // Lock body scroll when modals are open
   useEffect(() => {
-    if (showLogModal || showScanModal) {
+    if (showLogModal || showScanModal || showScanConfirm) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
     return () => { document.body.style.overflow = 'unset'; };
-  }, [showLogModal, showScanModal]);
+  }, [showLogModal, showScanModal, showScanConfirm]);
   
   const getLocalYYYYMMDD = (d = new Date()) => {
     const offset = d.getTimezoneOffset();
@@ -66,6 +66,12 @@ export default function CalorieTracker() {
   const [scanning, setScanning] = useState(false);
   const [aiEstimateLoading, setAiEstimateLoading] = useState(false);
 
+  // Scan confirmation state
+  const [showScanConfirm, setShowScanConfirm] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
+  const [scanConfirmLoading, setScanConfirmLoading] = useState(false);
+  const [scanMealType, setScanMealType] = useState('snack');
+
   const handleScan = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -74,22 +80,44 @@ export default function CalorieTracker() {
     formData.append('image', file);
     try {
       const res = await api.post('/api/ai/scan', formData);
-      setNewLog({
+      const result = {
         itemName: res.data.itemName || 'Scanned Meal',
         calories: res.data.calories || 0,
         protein: res.data.protein || 0,
         carbs: res.data.carbs || 0,
         fat: res.data.fat || 0,
-        servings: 1,
-        mealType: 'snack'
-      });
-      setShowLogModal(true);
+      };
+      setScanResult(result);
+      setScanMealType('snack');
+      setShowScanModal(false);
+      setShowScanConfirm(true);
     } catch (err) {
       console.error(err);
       alert('Failed to scan meal. Ensure your image is clear and try again.');
     } finally {
       setScanning(false);
       e.target.value = '';
+    }
+  };
+
+  const handleConfirmScanLog = async () => {
+    if (!scanResult) return;
+    setScanConfirmLoading(true);
+    try {
+      await api.post('/api/calories', {
+        ...scanResult,
+        servings: 1,
+        mealType: scanMealType,
+        date: currentDate,
+      });
+      setShowScanConfirm(false);
+      setScanResult(null);
+      localStorage.removeItem(`ai_advice_${currentDate}`);
+      fetchStats();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setScanConfirmLoading(false);
     }
   };
 
@@ -177,6 +205,27 @@ export default function CalorieTracker() {
       fetchStats();
     } catch (err) {
       console.error(err);
+    } finally {
+      setAiEstimateLoading(false);
+    }
+  };
+
+  const handleAnalyseLog = async () => {
+    if (!newLog.itemName || newLog.itemName.length < 2) return;
+    setAiEstimateLoading(true);
+    try {
+      const { data } = await estimateFood(newLog.itemName, newLog.quantity);
+      if (data) {
+        setNewLog(prev => ({
+          ...prev,
+          calories: data.calories || prev.calories || '',
+          protein: data.protein || prev.protein || '',
+          carbs: data.carbs || prev.carbs || '',
+          fat: data.fat || prev.fat || '',
+        }));
+      }
+    } catch (err) {
+      console.error('Analyse failed:', err);
     } finally {
       setAiEstimateLoading(false);
     }
@@ -630,6 +679,9 @@ export default function CalorieTracker() {
 
         <div className="flex justify-end gap-3 pt-4">
           <button type="button" onClick={() => setShowLogModal(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>Cancel</button>
+          <button type="button" onClick={handleAnalyseLog} disabled={aiEstimateLoading} className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: '#FF6B4A', background: dark ? 'rgba(255,107,74,0.12)' : 'rgba(255,107,74,0.1)' }}>
+            {aiEstimateLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Analyse
+          </button>
           <button type="submit" disabled={aiEstimateLoading} className="px-5 py-2.5 rounded-xl font-medium bg-[#FF6B4A] text-white hover:bg-[#E85A3A] transition-colors disabled:opacity-50">
             {aiEstimateLoading ? 'Estimating...' : 'Add Meal'}
           </button>
@@ -662,6 +714,56 @@ export default function CalorieTracker() {
             Cancel
           </button>
         </div>
+      </Modal>
+
+      {/* Scan Confirmation Modal */}
+      <Modal open={showScanConfirm} onClose={() => { setShowScanConfirm(false); setScanResult(null); }} title={<div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> Scanned Meal</div>} size="md">
+        {scanResult && (
+          <div className="space-y-5">
+            <div className="text-center">
+              <h3 className="text-xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{scanResult.itemName}</h3>
+              <p className="text-sm mt-1" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>AI has identified this meal and estimated its nutrition</p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Calories', value: `${scanResult.calories} kcal`, color: '#FF6B4A' },
+                { label: 'Protein', value: `${scanResult.protein}g`, color: '#3b82f6' },
+                { label: 'Carbs', value: `${scanResult.carbs}g`, color: '#eab308' },
+                { label: 'Fat', value: `${scanResult.fat}g`, color: '#ec4899' },
+              ].map(m => (
+                <div key={m.label} className="glass rounded-2xl p-4 text-center">
+                  <p className="text-xs font-medium mb-1" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>{m.label}</p>
+                  <p className="text-lg font-bold" style={{ color: m.color }}>{m.value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
+              <select value={scanMealType} onChange={e => setScanMealType(e.target.value)} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
+                <option value="breakfast" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Breakfast</option>
+                <option value="lunch" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Lunch</option>
+                <option value="dinner" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Dinner</option>
+                <option value="snack" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Snack</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2 border-t" style={{ borderColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+              <button type="button" onClick={() => { setShowScanConfirm(false); setScanResult(null); }} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>Cancel</button>
+              <button onClick={() => {
+                setNewLog({ ...scanResult, servings: 1, mealType: scanMealType, quantity: '100' });
+                setShowScanConfirm(false);
+                setScanResult(null);
+                setShowLogModal(true);
+              }} className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: '#FF6B4A', background: dark ? 'rgba(255,107,74,0.12)' : 'rgba(255,107,74,0.1)' }}>Edit Details</button>
+              <button onClick={handleConfirmScanLog} disabled={scanConfirmLoading} className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-medium bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50">
+                {scanConfirmLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                {scanConfirmLoading ? 'Logging...' : 'Confirm & Log'}
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
 
     </div>

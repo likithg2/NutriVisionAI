@@ -25,6 +25,7 @@ import {
 /* ─── constants ─── */
 const STATUS_COLOR = { active: "green", expired: "red", consumed: "zinc" };
 const CATS = ["grocery","dairy","produce","meat","beverage","supplement","snack","medicine","other"];
+const SI_UNITS = ["pcs","g","kg","mg","ml","L","oz","lb","cup","tbsp","tsp","dozen","pack","bottle","can","box","bag","strip","tablet"];
 const emptyForm = { name:"", brand:"", category:"grocery", quantity:"", unit:"pcs", location:"pantry", expiryDate:"", estimatedCost:"", calories:"", protein:"", carbs:"", fat:"", fiber:"", notes:"" };
 
 function daysUntil(d) { return d ? Math.ceil((new Date(d) - new Date()) / 86400000) : Infinity; }
@@ -513,7 +514,12 @@ export default function Inventory() {
                   value={form.quantity} 
                   onChange={e=>setForm(f=>({...f,quantity:e.target.value}))} 
                 />
-                <Input label="Unit" value={form.unit} onChange={e=>setForm(f=>({...f,unit:e.target.value}))} />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Unit</label>
+                  <select value={form.unit} onChange={e=>setForm(f=>({...f,unit:e.target.value}))} className="glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/40 bg-transparent">
+                    {SI_UNITS.map(u => <option key={u} value={u} className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{u}</option>)}
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -535,6 +541,9 @@ export default function Inventory() {
 
               <div className="flex justify-end gap-3 pt-2 border-t border-white/10">
                 <Button variant="ghost" type="button" onClick={closeModal}>Cancel</Button>
+                <Button type="button" variant="ghost" onClick={handleAnalyseItem} loading={aiEstimateLoading} className="gap-1.5 text-[#FF6B4A] hover:bg-orange-500/10">
+                  <Sparkles className="w-4 h-4" /> Analyse
+                </Button>
                 <Button type="submit" loading={saving}>{editItem ? "Save Changes" : "Add to Inventory"}</Button>
               </div>
             </motion.form>
@@ -577,8 +586,12 @@ export default function Inventory() {
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            setForm({ ...emptyForm, name: rec.item, category: (rec.category || 'grocery').toLowerCase(), quantity: "", unit: 'pcs' });
+                            const itemName = rec.item;
+                            setForm({ ...emptyForm, name: itemName, category: (rec.category || 'grocery').toLowerCase(), quantity: "", unit: 'pcs' });
+                            usda.setQuery(itemName);
+                            usda.setOpen(false);
                             setEditItem(null);
+                            setFormTab("manual");
                             setShopModalOpen(false);
                             setModalOpen(true);
                           }}
