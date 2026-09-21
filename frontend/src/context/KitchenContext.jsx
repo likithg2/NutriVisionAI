@@ -10,9 +10,16 @@ export function KitchenProvider({ children }) {
   const { items, lastUpdated } = useInventory();
   
   const [recipes, setRecipes] = useState([]);
-  const [cookedHistory, setCookedHistory] = useState([]);
+  const [cookedHistory, setCookedHistory] = useState(() => {
+    const saved = localStorage.getItem("nutrivision_kitchen_history");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("nutrivision_kitchen_history", JSON.stringify(cookedHistory));
+  }, [cookedHistory]);
 
   const markRecipeCooked = (recipe) => {
     setCookedHistory(prev => [...prev, recipe]);

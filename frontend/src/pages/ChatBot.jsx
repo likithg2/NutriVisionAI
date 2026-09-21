@@ -145,7 +145,7 @@ export default function ChatBot() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-9rem)] p-4 sm:p-6 rounded-3xl">
+    <div className="flex flex-col h-[calc(100vh-9.5rem)] -mb-14 p-4 sm:p-6 rounded-3xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 shrink-0">
         <div>

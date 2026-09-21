@@ -68,6 +68,10 @@ export default function Kitchen() {
     }
   };
 
+  const localRecipes = recipes.filter(r => r.globalCuisine && r.globalCuisine.toLowerCase().includes('local'));
+  const countryRecipes = recipes.filter(r => r.globalCuisine && r.globalCuisine.toLowerCase().includes('country'));
+  const globalRecipes = recipes.filter(r => !r.globalCuisine || (!r.globalCuisine.toLowerCase().includes('local') && !r.globalCuisine.toLowerCase().includes('country')));
+
   return (
     <div className="max-w-4xl mx-auto px-4 pt-6 pb-12 sm:pt-8">
         <div className="flex items-center gap-3 mb-8">
@@ -81,17 +85,17 @@ export default function Kitchen() {
                 <button onClick={refreshRecipes} disabled={loading} className={`p-1 transition-colors ${loading ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'text-orange-400 hover:text-orange-500'}`}>
                   <RotateCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                 </button>
-                <button onClick={() => setShowHistoryModal(true)} className="p-1 transition-colors text-orange-400 hover:text-orange-500 relative ml-2" title="Cooked History">
-                  <History className="w-5 h-5" />
-                  {cookedHistory.length > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-                      {cookedHistory.length}
-                    </span>
-                  )}
-                </button>
               </h1>
               <p style={{ color: t.textSecondary }}>Personalized recipes based on your inventory</p>
             </div>
+            <button onClick={() => setShowHistoryModal(true)} className="p-2 transition-colors text-orange-400 hover:text-orange-500 relative bg-orange-500/10 hover:bg-orange-500/20 rounded-xl" title="Cooked History">
+              <History className="w-6 h-6" />
+              {cookedHistory.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {cookedHistory.length}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -203,48 +207,143 @@ export default function Kitchen() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid gap-6"
+              className="space-y-12"
             >
               {recipes.length === 0 ? (
                 <div className="text-center py-12" style={{ color: t.textSecondary }}>
                   No recipes found. Try adding more items to your inventory!
                 </div>
               ) : (
-                recipes.map((recipe, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    onClick={() => setSelectedRecipe(recipe)}
-                    className="group cursor-pointer p-6 rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
-                    style={{
-                      background: t.cardBg,
-                      borderColor: t.cardBorder,
-                      boxShadow: t.cardShadow,
-                    }}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <h3 className="text-xl font-bold" style={{ color: t.textPrimary }}>
-                        {recipe.title}
-                      </h3>
-                      
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                          <Clock size={16} className="text-orange-500" /> {recipe.time}
-                        </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                          <Flame size={16} className="text-orange-500" /> {recipe.macros}
-                        </div>
-                        {recipe.globalCuisine && (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                            <Globe size={16} className="text-orange-500" /> {recipe.globalCuisine}
-                          </div>
-                        )}
+                <>
+                  {/* Local Cuisine Section */}
+                  {localRecipes.length > 0 && (
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold px-1" style={{ color: t.textPrimary }}>Local Cuisine</h2>
+                      <div className="grid gap-6">
+                        {localRecipes.map((recipe, idx) => (
+                          <motion.div
+                            key={`local-${idx}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            onClick={() => setSelectedRecipe(recipe)}
+                            className="group cursor-pointer p-6 rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
+                            style={{
+                              background: t.cardBg,
+                              borderColor: t.cardBorder,
+                              boxShadow: t.cardShadow,
+                            }}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <h3 className="text-xl font-bold" style={{ color: t.textPrimary }}>
+                                {recipe.title}
+                              </h3>
+                              <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Clock size={16} className="text-orange-500" /> {recipe.time}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Flame size={16} className="text-orange-500" /> {recipe.macros}
+                                </div>
+                                {recipe.globalCuisine && (
+                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                    <Globe size={16} className="text-orange-500" /> {recipe.globalCuisine}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
                       </div>
                     </div>
-                  </motion.div>
-                ))
+                  )}
+
+                  {/* Country Cuisine Section */}
+                  {countryRecipes.length > 0 && (
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold px-1 mt-4" style={{ color: t.textPrimary }}>Country Cuisine</h2>
+                      <div className="grid gap-6">
+                        {countryRecipes.map((recipe, idx) => (
+                          <motion.div
+                            key={`country-${idx}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            onClick={() => setSelectedRecipe(recipe)}
+                            className="group cursor-pointer p-6 rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
+                            style={{
+                              background: t.cardBg,
+                              borderColor: t.cardBorder,
+                              boxShadow: t.cardShadow,
+                            }}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <h3 className="text-xl font-bold" style={{ color: t.textPrimary }}>
+                                {recipe.title}
+                              </h3>
+                              <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Clock size={16} className="text-orange-500" /> {recipe.time}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Flame size={16} className="text-orange-500" /> {recipe.macros}
+                                </div>
+                                {recipe.globalCuisine && (
+                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                    <Globe size={16} className="text-orange-500" /> {recipe.globalCuisine}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Global Cuisine Section */}
+                  {globalRecipes.length > 0 && (
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold px-1 mt-4" style={{ color: t.textPrimary }}>Global Cuisine</h2>
+                      <div className="grid gap-6">
+                        {globalRecipes.map((recipe, idx) => (
+                          <motion.div
+                            key={`global-${idx}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            onClick={() => setSelectedRecipe(recipe)}
+                            className="group cursor-pointer p-6 rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
+                            style={{
+                              background: t.cardBg,
+                              borderColor: t.cardBorder,
+                              boxShadow: t.cardShadow,
+                            }}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <h3 className="text-xl font-bold" style={{ color: t.textPrimary }}>
+                                {recipe.title}
+                              </h3>
+                              <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Clock size={16} className="text-orange-500" /> {recipe.time}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Flame size={16} className="text-orange-500" /> {recipe.macros}
+                                </div>
+                                {recipe.globalCuisine && (
+                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                    <Globe size={16} className="text-orange-500" /> {recipe.globalCuisine}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </motion.div>
           )}

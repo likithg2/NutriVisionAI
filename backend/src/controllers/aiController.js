@@ -136,8 +136,9 @@ Here is their current inventory:
 ${inventoryText}
 
 Please suggest exactly ${numRecipes} creative, delicious, and healthy recipes they can make primarily using their inventory. 
-1. The first few recipes MUST be "Local Staple Foods" based on their location (${user?.district || 'their region'}) using the ingredients available.
-2. The remaining recipes MUST be a "Global Cuisine" showcase (e.g., Italian, Mexican, Indian, Fusion) that creatively repurposes their ingredients.
+1. The first few recipes MUST be "Local Staple Foods" based on their local district (${user?.district || 'their region'}) using the ingredients available.
+2. The next few recipes MUST be "Country Cuisine" based on the broader national cuisine of their country.
+3. The remaining recipes MUST be a "Global Cuisine" showcase from different countries (e.g., Italian, Mexican, Japanese, Mediterranean, Thai, French). Each of these MUST use the SPECIFIC country/region name as the cuisine tag, NOT the word "Global Cuisine".
 
 CRITICAL INSTRUCTIONS FOR RECIPE DETAIL:
 - The \`ingredients\` list MUST creatively combine as many items from their inventory as possible (aim for at least 4-5 inventory items per recipe, plus essential pantry staples). Do not just suggest a recipe with 2 ingredients.
@@ -154,7 +155,7 @@ You MUST return a raw JSON array (do not wrap in markdown code blocks like \`\`\
     "macros": "e.g., 400 kcal • 20g Protein • 30g Carbs",
     "ingredients": "A Markdown bulleted list of exact ingredients and measurements.",
     "instructions": "A highly detailed Markdown string containing step-by-step instructions. Explain exactly how to cook each element with precise times and seasoning amounts.",
-    "globalCuisine": "Name of the cuisine or 'Local Staple'"
+    "globalCuisine": "IMPORTANT: Use 'Local Staple' for district-local recipes, 'Country Cuisine' for national recipes, or the SPECIFIC country/cuisine name (e.g., 'Italian', 'Mexican', 'Japanese', 'Thai', 'Mediterranean') for global recipes. NEVER write 'Global Cuisine' here."
   }
 ]
 `;
