@@ -372,13 +372,13 @@ export default function PillNavbar() {
         </div>
       </Modal>
 
-      <Modal open={showNotifications} onClose={() => setShowNotifications(false)} title="Notifications" size="md" zIndex="z-[300]">
+      <Modal open={showNotifications} onClose={() => setShowNotifications(false)} title="Notifications" size="2xl" zIndex="z-[300]">
         <div className="flex gap-2 mb-4">
           <button onClick={() => setNotifTab("unread")} className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${notifTab === "unread" ? "bg-mint-500 text-white" : "glass text-zinc-500"}`}>Unread ({unreadCount})</button>
           <button onClick={() => setNotifTab("all")} className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${notifTab === "all" ? "bg-mint-500 text-white" : "glass text-zinc-500"}`}>History</button>
         </div>
         
-        <div className="flex flex-col gap-3 max-h-80 overflow-y-auto pr-2">
+        <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-2">
           {notifications.filter(n => notifTab === "all" || !n.read).length === 0 ? (
             <p className="text-center text-zinc-500 py-6 text-sm">No {notifTab === "unread" ? "unread " : ""}notifications.</p>
           ) : (
@@ -416,6 +416,7 @@ export default function PillNavbar() {
             Notification Details
           </div>
         }
+        size="2xl"
         zIndex="z-[400]"
       >
         {selectedNotification && (
