@@ -16,8 +16,7 @@ export default function Modal({ open, onClose, title, children, size = "md", zIn
       {open && (
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className={`fixed inset-0 ${zIndex} flex items-start justify-center p-4 pb-4`}
-          style={{ paddingTop: '130px' }}
+          className={`fixed inset-0 ${zIndex} flex items-start justify-center p-4 pb-6`}
           onClick={onClose}
         >
           <div className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm" />
@@ -28,7 +27,7 @@ export default function Modal({ open, onClose, title, children, size = "md", zIn
             transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}
             onClick={e => e.stopPropagation()}
             className={`relative flex flex-col w-full ${sizes[size]} rounded-2xl z-10 bg-white/70 dark:bg-[#1A1210]/70 backdrop-blur-3xl border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10`}
-            style={{ maxHeight: 'calc(100vh - 146px)' }}
+            style={{ marginTop: '110px', maxHeight: 'calc(100dvh - 140px)' }}
           >
             <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
               <h2 className="text-lg font-semibold flex-1 pr-4">{title}</h2>

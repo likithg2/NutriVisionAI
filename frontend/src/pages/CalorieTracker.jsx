@@ -573,8 +573,8 @@ export default function CalorieTracker() {
       {/* Log Modal */}
       <AnimatePresence>
         {showLogModal && (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pb-4 bg-black/20 dark:bg-black/40 backdrop-blur-sm" style={{ paddingTop: '130px' }} onClick={() => setShowLogModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-md backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10" style={{ maxHeight: 'calc(100vh - 146px)' }}>
+          <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pb-6 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={() => setShowLogModal(false)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-md backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10" style={{ marginTop: '110px', maxHeight: 'calc(100dvh - 140px)' }}>
               <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
                 <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
                   Log a Meal

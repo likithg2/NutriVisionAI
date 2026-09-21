@@ -10,7 +10,7 @@ import { getNotifications, getUnreadCount, markMany } from "../../api/notificati
 
 const navLinks = [
   { path: "/dashboard", label: "Dashboard" },
-  { path: "/inventory", label: "Inventory" },
+  { path: "/inventory", label: "SmartShelf" },
   { path: "/kitchen", label: "Kitchen" },
   { path: "/calories", label: "Calorie Tracker" },
   { path: "/activity", label: "Activity" },
@@ -81,7 +81,7 @@ export default function PillNavbar() {
           }}
         >
           {/* Logo Badge */}
-          <Link to="/" className="flex items-center gap-3 outline-none group">
+          <Link to="/dashboard" className="flex items-center gap-3 outline-none group">
             <motion.img
               src="/custom-logo.png"
               alt="Logo"
