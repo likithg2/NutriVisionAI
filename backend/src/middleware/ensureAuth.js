@@ -123,7 +123,7 @@ export default async function ensureAuth(req, res, next) {
     // Optional: fetch fresh user document (to get sessionsRevokedAt, avatarUrl, roles, etc.)
     if (tokenUserId) {
       try {
-        const dbUser = await User.findById(tokenUserId).select('-password -__v')
+        const dbUser = await User.findByPk(tokenUserId)
         if (!dbUser) {
           // token refers to a non-existent user
           return res.status(401).json({ error: 'Unauthorized' })
@@ -140,7 +140,7 @@ export default async function ensureAuth(req, res, next) {
 
         // Attach fresh fields
         req.user = {
-          id: dbUser._id.toString(),
+          id: dbUser.id.toString(),
           email: dbUser.email,
           name: dbUser.name,
           avatarUrl: dbUser.avatarUrl,

@@ -4,6 +4,7 @@ import path from 'path'
 import User from '../models/User.js'
 import Activity from '../models/Activity.js'
 import { notifyUser } from '../utils/notify.js'
+import { otpStore } from './authController.js'
 
 /**
  * GET /api/users/me
@@ -64,15 +65,16 @@ export async function updateMe(req, res, next) {
     await User.update(update, { where: { id } })
     const user = await User.findByPk(id, { attributes: { exclude: ['password'] } })
 
-    // log activity for name change
+    // log activity for profile change
     try {
-      if (update.name || update.age || update.height || update.weight || update.goal || update.activityLevel) {
+      const changedKeys = Object.keys(update);
+      if (changedKeys.length > 0) {
         await Activity.create({
           userId: id.toString(),
           userName: user.name,
           type: 'auth:update_profile',
           message: `Profile updated`,
-          meta: { changed: Object.keys(update) }
+          meta: { changed: changedKeys }
         })
         
         await notifyUser(
@@ -335,8 +337,18 @@ export async function deleteAccount(req, res, next) {
     const id = req.user?.id || req.user?._id;
     if (!id) return res.status(401).json({ error: 'Unauthorized' });
 
+    const { otp } = req.body;
+    if (!otp) return res.status(400).json({ error: 'OTP is required to delete account' });
+
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const stored = otpStore.get(user.email.toLowerCase());
+    if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
+      return res.status(401).json({ error: 'Invalid or expired OTP' });
+    }
+
+    otpStore.delete(user.email.toLowerCase());
 
     // Delete related records manually to prevent FK constraint errors
     try {

@@ -18,7 +18,7 @@ import Modal from "../components/ui/Modal.jsx";
 import {
   Package, Plus, Search, Trash2, Edit2, AlertCircle, ShoppingCart, 
   CalendarDays, Tag, DollarSign, Battery, Activity, Loader2, Sparkles, RefreshCcw, Image as ImageIcon,
-  ChevronDown, Maximize2, X, Upload, Check, ChevronRight, CheckCircle2,
+  ChevronDown, Maximize2, X, Upload, Check, ChevronRight, CheckCircle2, Info,
   Clock, Flame, MapPin, Smartphone, MoveRight, HelpCircle, RotateCw, ChefHat, Camera, Search as SearchIcon2, Globe
 } from "lucide-react";
 
@@ -85,7 +85,7 @@ function Toast({ msg, type }) {
 }
 
 /* ─── Item Card ─── */
-function ItemCard({ item, onUse, delay }) {
+function ItemCard({ item, onUse, onSelect, delay }) {
   const days = daysUntil(item.expiryDate);
   const urgColor = days <= 3 ? "text-red-500" : days <= 7 ? "text-amber-500" : "text-green-500";
   
@@ -94,7 +94,7 @@ function ItemCard({ item, onUse, delay }) {
   else if (days <= 7) bg = "rgba(245,158,11,0.15)"; // yellow 
   
   return (
-    <GlassCard delay={delay} className="group relative" style={{ background: bg }}>
+    <GlassCard delay={delay} className="group relative cursor-pointer hover:shadow-lg hover:scale-[1.02]" style={{ background: bg }} onClick={() => onSelect(item)}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -111,7 +111,7 @@ function ItemCard({ item, onUse, delay }) {
         </div>
         {item.status !== "expired" && item.status !== "consumed" && (
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-            <button onClick={() => onUse(item)} className="p-1.5 rounded-lg hover:bg-mint-500/20 text-zinc-400 hover:text-mint-500 transition-colors" title="Mark as Used">
+            <button onClick={(e) => { e.stopPropagation(); onUse(item); }} className="p-1.5 rounded-lg hover:bg-mint-500/20 text-zinc-400 hover:text-mint-500 transition-colors" title="Mark as Used">
               <CheckCircle2 className="w-4 h-4" />
             </button>
           </div>
@@ -129,6 +129,7 @@ export default function Inventory() {
   const [filter, setFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [detailItem, setDetailItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [formTab, setFormTab] = useState("manual");
   const [saving, setSaving] = useState(false);
@@ -192,6 +193,33 @@ export default function Inventory() {
   const closeUseModal = () => {
     setUseItem(null);
     setUseModalOpen(false);
+  };
+
+  const openUseModal = openUse;
+  const openEditModal = (item) => {
+    setEditItem(item);
+    setForm({
+      name: item.name || '',
+      category: item.category || 'grocery',
+      dosage: item.dosage || '',
+      expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString().split('T')[0] : '',
+      barcode: item.barcode || '',
+      estimatedCost: item.estimatedCost || '',
+      brand: item.brand || '',
+      quantity: item.quantity || '',
+      unit: item.unit || 'pcs',
+      location: item.location || 'pantry',
+      notes: item.notes || '',
+      purchaseDate: item.purchaseDate ? new Date(item.purchaseDate).toISOString().split('T')[0] : '',
+      calories: item.calories || '',
+      protein: item.protein || '',
+      carbs: item.carbs || '',
+      fat: item.fat || '',
+      fiber: item.fiber || '',
+    });
+    setFormTab('manual');
+    setScanPreview(null);
+    setModalOpen(true);
   };
 
   const handleCompletelyUsed = async () => {
@@ -394,7 +422,7 @@ export default function Inventory() {
           <div>
             <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Active Items</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <AnimatePresence>{activeFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUse} delay={i * 0.04} />)}</AnimatePresence>
+            <AnimatePresence>{activeFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
               {!activeFiltered.length && <div className="col-span-full text-center py-10 text-zinc-400">No active items found.</div>}
             </div>
           </div>
@@ -404,7 +432,7 @@ export default function Inventory() {
             <div className="pt-6 border-t border-black/5 dark:border-white/5">
               <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Discarded / Expired</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <AnimatePresence>{discardFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUse} delay={i * 0.04} />)}</AnimatePresence>
+                <AnimatePresence>{discardFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
               </div>
             </div>
           )}
@@ -653,6 +681,93 @@ export default function Inventory() {
             </form>
           </div>
         </div>
+      </Modal>
+
+      {/* Detail Item Modal */}
+      <Modal open={!!detailItem} onClose={() => setDetailItem(null)} title={
+        <div className="flex items-center gap-2">
+          <Info className="w-5 h-5 text-orange-500" />
+          <span className="text-xl">Item Details</span>
+        </div>
+      } size="md">
+        {detailItem && (
+          <div className="space-y-4">
+            <div className="glass rounded-2xl p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold">{detailItem.name}</h3>
+                  {detailItem.brand && <p className="text-zinc-500">{detailItem.brand}</p>}
+                </div>
+                <Badge color={STATUS_COLOR[detailItem.status] || "zinc"}>{detailItem.status}</Badge>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm mt-6">
+                <div>
+                  <p className="text-zinc-500 dark:text-zinc-400 mb-1">Category</p>
+                  <p className="font-semibold capitalize">{detailItem.category}</p>
+                </div>
+                <div>
+                  <p className="text-zinc-500 dark:text-zinc-400 mb-1">Location</p>
+                  <p className="font-semibold capitalize">{detailItem.location}</p>
+                </div>
+                <div>
+                  <p className="text-zinc-500 dark:text-zinc-400 mb-1">Quantity</p>
+                  <p className="font-semibold">{detailItem.quantity} {detailItem.unit}</p>
+                </div>
+                {detailItem.expiryDate && (
+                  <div>
+                    <p className="text-zinc-500 dark:text-zinc-400 mb-1">Expiry Date</p>
+                    <p className="font-semibold">{new Date(detailItem.expiryDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {detailItem.estimatedCost && (
+                  <div>
+                    <p className="text-zinc-500 dark:text-zinc-400 mb-1">Est. Cost</p>
+                    <p className="font-semibold">${detailItem.estimatedCost}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {(detailItem.calories || detailItem.protein || detailItem.carbs || detailItem.fat || detailItem.fiber) && (
+              <div className="glass rounded-2xl p-6">
+                <h4 className="font-semibold mb-3">Nutrition</h4>
+                <div className="grid grid-cols-5 gap-2 text-center text-sm">
+                  {detailItem.calories && <div><p className="text-orange-500 font-bold">{detailItem.calories}</p><p className="text-xs text-zinc-500">kcal</p></div>}
+                  {detailItem.protein && <div><p className="text-blue-500 font-bold">{detailItem.protein}g</p><p className="text-xs text-zinc-500">Protein</p></div>}
+                  {detailItem.carbs && <div><p className="text-yellow-500 font-bold">{detailItem.carbs}g</p><p className="text-xs text-zinc-500">Carbs</p></div>}
+                  {detailItem.fat && <div><p className="text-pink-500 font-bold">{detailItem.fat}g</p><p className="text-xs text-zinc-500">Fat</p></div>}
+                  {detailItem.fiber && <div><p className="text-green-500 font-bold">{detailItem.fiber}g</p><p className="text-xs text-zinc-500">Fiber</p></div>}
+                </div>
+              </div>
+            )}
+
+            {detailItem.notes && (
+              <div className="glass rounded-2xl p-6">
+                <h4 className="font-semibold mb-2">Notes</h4>
+                <p className="text-sm">{detailItem.notes}</p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+              <button 
+                onClick={() => {
+                  const itemToEdit = detailItem;
+                  setDetailItem(null);
+                  openEditModal(itemToEdit);
+                }} 
+                className="px-5 py-2.5 rounded-xl font-medium transition-colors hover:bg-orange-500/10 text-orange-500"
+              >
+                Edit Item
+              </button>
+              <button 
+                onClick={() => setDetailItem(null)} 
+                className="px-5 py-2.5 rounded-xl font-medium transition-colors bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

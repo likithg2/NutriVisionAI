@@ -25,10 +25,34 @@ const INSPIRING_FACTS = [
   "Spices like turmeric and cinnamon not only add flavor but also possess powerful anti-inflammatory properties."
 ];
 
+function Toast({ msg, type }) {
+  if (!msg) return null;
+  return (
+    <motion.div initial={{ opacity: 0, y: -12, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+      className="fixed top-28 right-6 z-[9999] flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium shadow-xl backdrop-blur-2xl bg-white/60 dark:bg-[#1A1210]/60 border border-white/20 dark:border-white/10 text-zinc-800 dark:text-zinc-200"
+    >
+      {type === "success" ? <Check className="w-4 h-4 text-mint-500" /> : <AlertTriangle className="w-4 h-4 text-red-500" />}
+      {msg}
+    </motion.div>
+  );
+}
+
 export default function CalorieTracker() {
   const { dark } = useTheme();
   const { user } = useAuth();
   
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [toast, setToast] = useState({ msg: "", type: "" });
+  
+  useEffect(() => {
+    if (location.state?.showToast) {
+      setToast({ msg: location.state.showToast, type: "success" });
+      setTimeout(() => setToast({ msg: "", type: "" }), 4000);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
+
   const [data, setData] = useState({ 
     goals: { calories: 2000, protein: 150, carbs: 200, fat: 65 }, 
     consumed: { calories: 0, protein: 0, carbs: 0, fat: 0 }, 
@@ -42,15 +66,7 @@ export default function CalorieTracker() {
   const [showScanModal, setShowScanModal] = useState(false);
   const [newLog, setNewLog] = useState({ itemName: '', quantity: '100', calories: '', protein: '', carbs: '', fat: '', mealType: 'snack' });
 
-  // Lock body scroll when modals are open
-  useEffect(() => {
-    if (showLogModal || showScanModal || showScanConfirm) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => { document.body.style.overflow = 'unset'; };
-  }, [showLogModal, showScanModal, showScanConfirm]);
+
   
   const getLocalYYYYMMDD = (d = new Date()) => {
     const offset = d.getTimezoneOffset();
@@ -71,6 +87,17 @@ export default function CalorieTracker() {
   const [scanResult, setScanResult] = useState(null);
   const [scanConfirmLoading, setScanConfirmLoading] = useState(false);
   const [scanMealType, setScanMealType] = useState('snack');
+  const [selectedLog, setSelectedLog] = useState(null);
+
+  // Lock body scroll when modals are open
+  useEffect(() => {
+    if (showLogModal || showScanModal || showScanConfirm) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [showLogModal, showScanModal, showScanConfirm]);
 
   const handleScan = async (e) => {
     const file = e.target.files[0];
@@ -120,11 +147,6 @@ export default function CalorieTracker() {
       setScanConfirmLoading(false);
     }
   };
-
-  const location = useLocation();
-  const navigate = useNavigate();
-
-
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -365,7 +387,9 @@ export default function CalorieTracker() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-20">
+    <>
+      <AnimatePresence>{toast.msg && <Toast msg={toast.msg} type={toast.type} />}</AnimatePresence>
+      <div className="max-w-5xl mx-auto space-y-6 pb-20">
       
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -627,7 +651,12 @@ export default function CalorieTracker() {
         ) : (
           <div className="space-y-3">
             {logs.map((log) => (
-              <div key={log.id || log._id} className="flex justify-between items-center p-4 rounded-2xl" style={{ background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+              <div 
+                key={log.id || log._id} 
+                onClick={() => setSelectedLog(log)}
+                className="flex justify-between items-center p-4 rounded-2xl cursor-pointer hover:opacity-80 transition-opacity" 
+                style={{ background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
+              >
                 <div>
                   <p className="font-medium" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>{log.itemName}</p>
                   <p className="text-xs mt-0.5 capitalize" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>{log.mealType} • {log.servings || 1} serving(s)</p>
@@ -639,7 +668,7 @@ export default function CalorieTracker() {
                       Protein: {(log.protein || 0) * (log.servings || 1)}g • Carbs: {(log.carbs || 0) * (log.servings || 1)}g • Fat: {(log.fat || 0) * (log.servings || 1)}g
                     </p>
                   </div>
-                  <button onClick={() => handleDelete(log.id || log._id)} className="p-2 text-zinc-400 hover:text-red-500 transition-colors" title="Delete Log">
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(log.id || log._id); }} className="p-2 text-zinc-400 hover:text-red-500 transition-colors" title="Delete Log">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -766,6 +795,50 @@ export default function CalorieTracker() {
         )}
       </Modal>
 
+      {/* Detailed Info Modal */}
+      <Modal open={!!selectedLog} onClose={() => setSelectedLog(null)} title="Meal Details" size="sm">
+        {selectedLog && (
+          <div className="p-5 space-y-4">
+            <div>
+              <h4 className="text-lg font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{selectedLog.itemName}</h4>
+              <p className="text-sm capitalize" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>{selectedLog.mealType} • {new Date(selectedLog.createdAt).toLocaleString()}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 rounded-xl text-center" style={{ background: dark ? 'rgba(255,255,255,0.03)' : '#F3EEE8' }}>
+                <p className="text-xs font-semibold mb-1" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Calories</p>
+                <p className="text-xl font-bold text-[#FF6B4A]">{selectedLog.calories * (selectedLog.servings || 1)}</p>
+              </div>
+              <div className="p-3 rounded-xl text-center" style={{ background: dark ? 'rgba(255,255,255,0.03)' : '#F3EEE8' }}>
+                <p className="text-xs font-semibold mb-1" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Servings</p>
+                <p className="text-xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{selectedLog.servings || 1}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-semibold uppercase tracking-wider" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Macros</p>
+              <div className="flex justify-between items-center text-sm border-b pb-2" style={{ borderColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
+                <span style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Protein</span>
+                <span className="font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{(selectedLog.protein || 0) * (selectedLog.servings || 1)}g</span>
+              </div>
+              <div className="flex justify-between items-center text-sm border-b pb-2" style={{ borderColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
+                <span style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Carbs</span>
+                <span className="font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{(selectedLog.carbs || 0) * (selectedLog.servings || 1)}g</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Fat</span>
+                <span className="font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{(selectedLog.fat || 0) * (selectedLog.servings || 1)}g</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button onClick={() => setSelectedLog(null)} className="px-5 py-2.5 bg-[#FF6B4A] text-white font-medium rounded-xl shadow-lg hover:opacity-90">Close</button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
     </div>
+    </>
   );
 }

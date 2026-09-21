@@ -4,6 +4,9 @@
 
 NutriVision AI is an AI-powered smart nutrition and inventory management web application. It combines cutting-edge AI vision capabilities with intuitive dashboard features to help users track their food intake, manage their kitchen inventory (SmartShelf), and generate intelligent recipes and shopping lists based on what they already have at home.
 
+### 📄 Resume Summary
+**NutriVision AI** is a full-stack health & nutrition platform that uses Google Gemini AI to analyze food photos, log macros, and manage kitchen inventory to prevent food waste. Built with a responsive **React + Tailwind CSS** frontend featuring Framer Motion animations and dark/light modes. The robust backend runs on **Node.js, Express, and Sequelize**, featuring JWT authentication, automated background CRON jobs for expiration alerts, and comprehensive user activity tracking. The platform dynamically generates custom recipes and smart shopping lists based on available inventory, combining AI vision, custom logic, and modern UX design to offer a seamless, personalized health-tracking experience.
+
 ---
 
 ## ✨ Key Features
@@ -43,6 +46,13 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
   * Built with a modern, glassmorphism UI using Tailwind CSS and Framer Motion for buttery-smooth page transitions.
   * Full Dark/Light mode support.
 
+## 🚀 Recent Updates & Enhancements
+- **Customized History (Activity Log):** Upgraded the Activity page to a full History tracking system with dedicated filters (Logged Meals, Expired Items, Added Items, Used Items).
+- **Smart Kitchen Flow:** Seamlessly log cooked AI recipes into the Calorie Tracker. Recipes dynamically move to a dedicated Cooking History modal upon logging.
+- **Account Security:** Implemented secure OTP-based account deletion.
+- **Automated Expiry Tracking:** A background CRON job tracks expiring inventory and sends automated email and in-app push notifications when items expire.
+- **Native Language Toggle:** Custom-built Google Translate integration allows 1-click toggling between English and Kannada without intrusive widgets or banners.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -51,9 +61,9 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
 | ---------------- | ----------------------------------------------- |
 | **Frontend**     | React, Vite, Tailwind CSS, Framer Motion, Recharts, Lucide React, React Router |
 | **Backend**      | Node.js, Express.js, Sequelize ORM (SQLite / PostgreSQL) |
-| **Authentication**| JWT (JSON Web Tokens), bcryptjs |
-| **AI Integration**| Google Gemini AI API (`gemini-3.5-flash-lite`) using the official `@google/genai` SDK |
-| **Other Tools**  | Multer (image uploads), Markdown parsing (react-markdown) |
+| **Authentication**| JWT (JSON Web Tokens), bcryptjs, OTP verification |
+| **AI Integration**| Google Gemini API (`gemini-3.5-flash-lite`) using the official `@google/genai` SDK |
+| **Other Tools**  | node-cron, Multer (image uploads), Markdown parsing (react-markdown) |
 
 ---
 
@@ -66,7 +76,7 @@ NutriVisionAi/
 │   │   ├── controllers/   # Route handlers for auth, inventory, tracker, ai, etc.
 │   │   ├── models/        # Sequelize DB models (User, InventoryItem, CalorieLog, Activity)
 │   │   ├── routes/        # Express API routes
-│   │   ├── utils/         # Helper functions
+│   │   ├── utils/         # Helper functions & CRON jobs
 │   │   └── server.js      # Main Express application entry point
 │   ├── uploads/           # Image storage for scanners
 │   └── package.json
@@ -74,7 +84,7 @@ NutriVisionAi/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/    # Reusable UI components (Navbar, Modals, AppShell, GlassCard)
-│   │   ├── pages/         # Main screens (Dashboard, SmartShelf, Tracker, Kitchen, ChatBot, Activity)
+│   │   ├── pages/         # Main screens (Dashboard, SmartShelf, Tracker, Kitchen, ChatBot, History)
 │   │   ├── context/       # React Context API providers (Auth, Theme, Inventory, Kitchen)
 │   │   ├── api/           # Axios interceptors and API wrappers
 │   │   ├── App.jsx        # Routing and Layout transitions

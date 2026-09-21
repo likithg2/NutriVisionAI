@@ -108,19 +108,42 @@ import { Op } from 'sequelize'
 import { sendPushToUser } from '../utils/push.js'
 import { sendEmail } from './mailer.js'
 import Notification from '../models/Notification.js'
-import { markExpired } from '../controllers/itemController.js' // marks items as expired
+import { markExpired } from '../controllers/itemController.js'
+
+/**
+ * Create a notification record AND attempt to send push/email.
+ * Returns true on success, false on failure.
+ */
+async function notifyUser(userId, title, body, type = 'system') {
+  try {
+    await Notification.create({
+      userId,
+      title,
+      message: body,
+      type,
+      read: false,
+    });
+    // Best-effort push
+    await sendPushToUser(userId, title, body).catch(e =>
+      console.warn('[cron] push error', e?.message || e)
+    );
+    const user = await User.findByPk(userId);
+    if (user && user.email) { await sendEmail(user.email, title, body).catch(e => console.warn('[cron] email error', e?.message || e)); }
+    return true;
+  } catch (err) {
+    console.error('[cron] notifyUser failed:', err?.message || err);
+    return false;
+  }
+}
 
 /**
  * initCronJobs()
- * - Test schedule: runs daily at 12:39 (Asia/Kolkata timezone)
- * - In production you may prefer '0 9 * * *' for 9:00 AM daily
+ * - Default schedule: 9:00 AM IST daily ('0 9 * * *')
+ * - Override with CRON_SCHEDULE env var for testing ('* * * * *' = every minute)
  * - Also runs markExpired() once immediately on server startup.
  */
 export function initCronJobs() {
-  // SCHEDULE — runs at 12:39 PM daily (Asia/Kolkata)
-  const schedule = process.env.CRON_SCHEDULE || '18 13 * * *'
-
-  // Set timezone to Asia/Kolkata (IST) by default, but allow override via CRON_TZ
+  const schedule = process.env.CRON_SCHEDULE || '0 9 * * *'
   const tz = process.env.CRON_TZ || 'Asia/Kolkata'
 
   console.log('[cron] starting expiry cron with schedule:', schedule, 'tz:', tz)
@@ -145,50 +168,56 @@ export function initCronJobs() {
       } catch (err) {
         console.error('[cron] markExpired() failed:', err?.message || err)
       }
-
-      // STEP 2 — Check for items expiring within 7 days
+      // STEP 2 — Check for items expiring within 3 days (inclusive of today)
       try {
         console.log('[cron] Checking items expiring soon...')
 
         const now = new Date()
-        const in2 = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+        const in3 = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
 
         const expiringItems = await Item.findAll({
           where: {
             status: 'active',
-            expiryDate: { [Op.gte]: now, [Op.lte]: in2 },
+            expiryDate: { [Op.lte]: in3 },
             [Op.or]: [{ notified: false }, { notified: null }]
-          },
-          include: [{ model: User, attributes: ['id', 'email', 'notificationPrefs'] }]
+          }
         })
 
         console.log('[cron] Found', expiringItems.length, 'expiring items')
 
-        // STEP 3 — For each expiring item: check preferences, send notification via notifyUser
+        // STEP 3 — For each expiring item: send appropriate notification
         for (const item of expiringItems) {
           try {
-            const user = item.User;
+            // Fetch user separately to avoid EagerLoadingError with aliases
+            const user = await User.findByPk(item.userId);
             if (!user) continue;
 
             const prefs = user.notificationPrefs || {};
             const daysUntilExpiry = Math.ceil((new Date(item.expiryDate) - now) / (1000 * 60 * 60 * 24));
             
-            // Should we notify today based on preferences?
-            let shouldNotify = false;
-            // Default true if undefined
-            if (daysUntilExpiry > 1 && prefs.threeDayWarning !== false) shouldNotify = true;
-            if (daysUntilExpiry === 1 && prefs.oneDayWarning !== false) shouldNotify = true;
-            if (daysUntilExpiry <= 0 && prefs.dayOfExpiry !== false) shouldNotify = true;
-            
-            if (!shouldNotify) {
-              console.log(`[cron] Skipping notification for item ${item.id} due to user preferences`);
+            // Determine notification type and message
+            let title, body;
+            if (daysUntilExpiry <= 0) {
+              // Day of expiry or already expired
+              if (prefs.dayOfExpiry === false) continue;
+              title = `🚨 Expired Today: ${item.name}`;
+              body = `${item.name} has expired today! Please check it and discard if needed.`;
+            } else if (daysUntilExpiry === 1) {
+              // 1 day left
+              if (prefs.oneDayWarning === false) continue;
+              title = `⚠️ Expires Tomorrow: ${item.name}`;
+              body = `${item.name} expires tomorrow (${new Date(item.expiryDate).toLocaleDateString()}). Use it today!`;
+            } else if (daysUntilExpiry <= 3) {
+              // 2–3 days left
+              if (prefs.threeDayWarning === false) continue;
+              title = `📅 Expiring Soon: ${item.name}`;
+              body = `${item.name} expires in ${daysUntilExpiry} days (${new Date(item.expiryDate).toLocaleDateString()}). Plan to use it!`;
+            } else {
+              // > 3 days — skip (shouldn't reach here)
               continue;
             }
 
-            const title = `Expiry alert: ${item.name}`
-            const body = `${item.name} expires on ${new Date(item.expiryDate).toLocaleDateString()} (in ${daysUntilExpiry} days).`
-
-            const notifiedOk = await notifyUser(user.id.toString(), title, body, "email");
+            const notifiedOk = await notifyUser(user.id.toString(), title, body, 'system');
             
             if (notifiedOk) {
               await item.update({ notified: true, notifiedAt: new Date() })
@@ -224,6 +253,13 @@ export function initCronJobs() {
     }
   })()
 
-  console.log('[cron] Jobs scheduled for 12:39 PM daily (schedule:', schedule, ' tz:', tz, ')')
+  console.log('[cron] Jobs scheduled:', schedule, 'tz:', tz)
 }
 
+/**
+ * createNotification() — exported helper for controllers to call when
+ * a new item is added or a meal is logged.
+ */
+export async function createNotification(userId, title, message, type = 'system') {
+  return notifyUser(userId, title, message, type);
+}

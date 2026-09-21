@@ -126,6 +126,18 @@ export const logMeal = async (req, res) => {
       console.warn('Activity logging failed (logMeal):', e?.message || e);
     }
 
+    // Notify user: new food logged
+    try {
+      await notifyUser(
+        req.user.id.toString(),
+        `🍽️ Meal Logged: ${itemName}`,
+        `${itemName} (${mealType}) — ${calories * servings} kcal logged for ${date || new Date().toLocaleDateString()}.`,
+        'system'
+      );
+    } catch (e) {
+      console.warn('[calorieController] meal-logged notification failed:', e?.message || e);
+    }
+
     // Checking Macro Limits for notifications
     try {
       const user = await User.findByPk(req.user.id);

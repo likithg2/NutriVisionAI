@@ -142,6 +142,9 @@ export async function requestOtp(req, res, next) {
     if (action === 'reset') {
       subject = 'Reset your NutriVision password';
       message = `Use this OTP to reset your password: ${otp}\n\nIt will expire in 10 minutes.`;
+    } else if (action === 'delete') {
+      subject = 'Confirm your NutriVision Account Deletion';
+      message = `You have requested to delete your NutriVisionAi account.\n\nUse this OTP to confirm deletion: ${otp}\n\nIf you did not request this, please ignore this email.`;
     }
 
     try {

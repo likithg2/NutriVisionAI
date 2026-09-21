@@ -1,12 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Menu, X, Sun, Moon, Bell, Search, LogOut, Check, Languages } from "lucide-react";
+import { Leaf, Menu, X, Sun, Moon, Bell, Search, LogOut, Check, Languages, Info } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import Modal from "../ui/Modal.jsx";
 import { getNotifications, getUnreadCount, markMany } from "../../api/notifications.js";
+
+function getGoogTransLang() {
+  const m = document.cookie.match(/(?:^|;)\s*googtrans=\/en\/([a-z]+)/);
+  return m ? m[1] : "en";
+}
 
 export default function PillNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -15,17 +20,36 @@ export default function PillNavbar() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifTab, setNotifTab] = useState("unread");
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [toastNotif, setToastNotif] = useState(null);
+  const [currentLang, setCurrentLang] = useState(() => getGoogTransLang());
+  const lastNotifIdRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { dark, toggle } = useTheme();
   const { user } = useAuth();
 
+  const handleTranslateToggle = useCallback(() => {
+    const isKannada = getGoogTransLang() === "kn";
+    if (isKannada) {
+      // Reset to English — remove the cookie and reload
+      document.cookie = "googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+      document.cookie = "googtrans=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+      setCurrentLang("en");
+    } else {
+      // Switch to Kannada
+      document.cookie = "googtrans=/en/kn; path=/";
+      setCurrentLang("kn");
+    }
+    window.location.reload();
+  }, []);
+
   const navLinks = [
     { path: "/dashboard", label: "Dashboard" },
     { path: "/inventory", label: "SmartShelf" },
     { path: "/kitchen", label: "Kitchen" },
-    { path: "/calories", label: "Tracker" },
-    { path: "/activity", label: "Activity" },
+    { path: "/calories", label: "Calorie Tracker" },
+    { path: "/activity", label: "History" },
   ];
   
   const initials = user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2) : "?";
@@ -37,7 +61,18 @@ export default function PillNavbar() {
         getNotifications({ limit: 50 })
       ]);
       setUnreadCount(countRes.data?.count || 0);
-      setNotifications(listRes.data?.items || listRes.data || []);
+      const items = listRes.data?.items || listRes.data || [];
+      setNotifications(items);
+      // Show toast if a new notification arrived since last poll
+      if (items.length > 0) {
+        const newest = items[0];
+        const newestId = newest._id || newest.id;
+        if (lastNotifIdRef.current && newestId !== lastNotifIdRef.current && !newest.read) {
+          setToastNotif({ title: newest.title || "New Notification", msg: newest.message });
+          setTimeout(() => setToastNotif(null), 5000);
+        }
+        lastNotifIdRef.current = newestId;
+      }
     } catch (err) {
       console.error(err);
     }
@@ -60,12 +95,49 @@ export default function PillNavbar() {
     }
   };
 
+  const openNotification = (notif) => {
+    setSelectedNotification(notif);
+    const id = notif._id || notif.id;
+    if (id && !notif.read) markRead(id);
+  };
+
   useEffect(() => {
     setMobileOpen(false);
-  }, [location.pathname]);
+    if (location.state?.showToast) {
+      setToastNotif({ title: "Success", msg: location.state.showToast });
+      setTimeout(() => setToastNotif(null), 5000);
+      // Clear state so it doesn't show again on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   return (
     <>
+      {/* Global New-Notification Toast */}
+      <AnimatePresence>
+        {toastNotif && (
+          <motion.div
+            initial={{ opacity: 0, x: 80 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 80 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="fixed top-28 right-6 z-[9999] flex items-start gap-3 px-4 py-3 rounded-2xl text-sm font-medium shadow-2xl backdrop-blur-2xl cursor-pointer"
+            style={{ background: dark ? "rgba(26,18,16,0.92)" : "rgba(255,255,255,0.92)", border: "1px solid rgba(255,107,74,0.3)" }}
+            onClick={() => { setToastNotif(null); setShowNotifications(true); fetchNotifs(); }}
+          >
+            <div className="w-8 h-8 rounded-full bg-[#FF6B4A]/10 flex items-center justify-center shrink-0">
+              <Bell className="w-4 h-4 text-[#FF6B4A]" />
+            </div>
+            <div className="pr-2">
+              <p className="font-bold text-xs uppercase text-[#FF6B4A] tracking-wider mb-0.5">{toastNotif.title}</p>
+              <p className="text-zinc-700 dark:text-zinc-300 leading-snug max-w-[220px]">{toastNotif.msg}</p>
+            </div>
+            <button onClick={(e) => { e.stopPropagation(); setToastNotif(null); }} className="ml-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="fixed top-0 left-0 right-0 z-[200] px-4 py-6 pointer-events-none flex justify-center w-full">
         <motion.nav
           initial={{ y: -50, opacity: 0 }}
@@ -158,8 +230,19 @@ export default function PillNavbar() {
               </motion.button>
             </div>
 
-            {/* Google Translate Widget Container */}
-            <div id="google_translate_element" className="hidden sm:block [&>div]:!h-9 [&>div>div]:!h-9 [&_.goog-te-combo]:!h-9 [&_.goog-te-combo]:!rounded-xl [&_.goog-te-combo]:!text-sm [&_.goog-te-combo]:!border-none [&_.goog-te-combo]:!bg-zinc-100 dark:[&_.goog-te-combo]:!bg-zinc-800 dark:[&_.goog-te-combo]:!text-zinc-200" />
+            {/* Language Toggle Button: EN <-> KN */}
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={handleTranslateToggle}
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors outline-none hover:text-[#FF6B4A] relative"
+              style={{ color: dark ? "#C9B8AE" : "#6B6560", background: "transparent" }}
+              title={currentLang === "kn" ? "Switch to English" : "Translate to Kannada"}
+            >
+              <Languages className="w-4 h-4" />
+              {currentLang === "kn" && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF6B4A]" />
+              )}
+            </motion.button>
 
             {/* Theme Toggle */}
             <motion.button
@@ -300,11 +383,16 @@ export default function PillNavbar() {
             <p className="text-center text-zinc-500 py-6 text-sm">No {notifTab === "unread" ? "unread " : ""}notifications.</p>
           ) : (
             notifications.filter(n => notifTab === "all" || !n.read).map(n => (
-              <div key={n.id || n._id} className="p-4 rounded-xl relative group flex flex-col gap-1" style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+              <div 
+                key={n.id || n._id} 
+                onClick={() => openNotification(n)}
+                className="p-4 rounded-xl relative group flex flex-col gap-1 cursor-pointer hover:shadow-md transition-all" 
+                style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}
+              >
                 <div className="flex justify-between items-start gap-2">
                   <h4 className="font-semibold text-sm" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{n.title}</h4>
                   {!n.read && (
-                    <button onClick={() => markRead(n.id || n._id)} className="text-mint-500 hover:text-mint-600 p-1 bg-mint-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" title="Mark as read">
+                    <button onClick={(e) => { e.stopPropagation(); markRead(n.id || n._id); }} className="text-mint-500 hover:text-mint-600 p-1 bg-mint-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" title="Mark as read">
                       <Check className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -316,6 +404,53 @@ export default function PillNavbar() {
             ))
           )}
         </div>
+      </Modal>
+
+      {/* Notification Detail Modal */}
+      <Modal 
+        open={!!selectedNotification} 
+        onClose={() => setSelectedNotification(null)}
+        title={
+          <div className="flex items-center gap-2 text-xl">
+            <Info className="w-6 h-6 text-mint-500" />
+            Notification Details
+          </div>
+        }
+        zIndex="z-[400]"
+      >
+        {selectedNotification && (
+          <div className="space-y-4">
+            <div className="glass p-4 rounded-xl" style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Title</p>
+              <h4 className="font-bold text-lg">{selectedNotification.title}</h4>
+            </div>
+            <div className="glass p-4 rounded-xl" style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Message</p>
+              <p className="text-base">{selectedNotification.message}</p>
+            </div>
+            <div className="glass p-4 rounded-xl" style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Received At</p>
+              <p className="font-medium">{new Date(selectedNotification.createdAt).toLocaleString()}</p>
+            </div>
+            {selectedNotification.meta && Object.keys(selectedNotification.meta).length > 0 && (
+              <div className="glass p-4 rounded-xl overflow-x-auto" style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">Additional Data</p>
+                <pre className="text-xs">
+                  {JSON.stringify(selectedNotification.meta, null, 2)}
+                </pre>
+              </div>
+            )}
+            <div className="flex justify-end pt-2">
+              <button 
+                onClick={() => setSelectedNotification(null)}
+                className="px-5 py-2 rounded-xl font-medium transition-colors"
+                style={{ background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </>
   );

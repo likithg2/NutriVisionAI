@@ -2,6 +2,10 @@
 import express from "express";
 import axios from "axios";
 import llmFormatter from "../services/formatters/llmFormatter.js";
+import MealLog from "../models/MealLog.js";
+import Item from "../models/Item.js";
+import Activity from "../models/Activity.js";
+import { Op } from "sequelize";
 
 const router = express.Router();
 
@@ -20,61 +24,112 @@ async function searchDB(userId, message) {
   }
 }
 
-// Helper to always send plain-text responses (avoid HTML content-type)
+/**
+ * Fetch all relevant user context: items, meal logs, activities
+ */
+async function getUserContext(userId) {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+
+    const [items, todayLogs, recentLogs] = await Promise.all([
+      Item.findAll({
+        where: { userId, status: { [Op.in]: ["active", "expiring_soon"] } },
+        order: [["expiryDate", "ASC"]],
+        limit: 50,
+      }),
+      MealLog.findAll({
+        where: { userId, date: today },
+        order: [["createdAt", "DESC"]],
+      }),
+      MealLog.findAll({
+        where: { userId, date: { [Op.gte]: sevenDaysAgo } },
+        order: [["date", "DESC"], ["createdAt", "DESC"]],
+        limit: 30,
+      }),
+    ]);
+
+    return { items, todayLogs, recentLogs };
+  } catch (err) {
+    console.error("[chatbot] getUserContext failed:", err?.message || err);
+    return { items: [], todayLogs: [], recentLogs: [] };
+  }
+}
+
+/**
+ * Build a rich context string from all user data
+ */
+function buildContextString(contextItems, userCtx) {
+  const lines = [];
+
+  if (contextItems && contextItems.length > 0) {
+    lines.push("=== SmartShelf Inventory (relevant items) ===");
+    contextItems.forEach((it) => {
+      const expiry = it.expiryDate ? new Date(it.expiryDate).toLocaleDateString() : "no expiry";
+      lines.push(`- ${it.name} (Brand: ${it.brand || "—"}, Location: ${it.location || "—"}, Expiry: ${expiry})`);
+    });
+    lines.push("");
+  }
+
+  if (userCtx) {
+    if (userCtx.items && userCtx.items.length > 0) {
+      lines.push("=== Full Inventory ===");
+      userCtx.items.forEach((it) => {
+        const expiry = it.expiryDate ? new Date(it.expiryDate).toLocaleDateString() : "no expiry";
+        lines.push(
+          `- ${it.name} | Qty: ${it.quantity ?? "?"} ${it.unit || ""} | Location: ${it.location || "—"} | Expiry: ${expiry} | Cal: ${it.calories ?? "?"}kcal | P: ${it.protein ?? "?"}g`
+        );
+      });
+      lines.push("");
+    }
+
+    if (userCtx.todayLogs && userCtx.todayLogs.length > 0) {
+      const totals = userCtx.todayLogs.reduce(
+        (acc, l) => {
+          acc.calories += (l.calories || 0) * (l.servings || 1);
+          acc.protein += (l.protein || 0) * (l.servings || 1);
+          acc.carbs += (l.carbs || 0) * (l.servings || 1);
+          acc.fat += (l.fat || 0) * (l.servings || 1);
+          return acc;
+        },
+        { calories: 0, protein: 0, carbs: 0, fat: 0 }
+      );
+      lines.push("=== Today's Food Log ===");
+      userCtx.todayLogs.forEach((l) => {
+        lines.push(
+          `- ${l.itemName} (${l.mealType}) — ${Math.round((l.calories || 0) * (l.servings || 1))} kcal, P: ${Math.round((l.protein || 0) * (l.servings || 1))}g, C: ${Math.round((l.carbs || 0) * (l.servings || 1))}g, F: ${Math.round((l.fat || 0) * (l.servings || 1))}g`
+        );
+      });
+      lines.push(
+        `Today's totals: ${Math.round(totals.calories)} kcal | Protein: ${Math.round(totals.protein)}g | Carbs: ${Math.round(totals.carbs)}g | Fat: ${Math.round(totals.fat)}g`
+      );
+      lines.push("");
+    } else {
+      lines.push("=== Today's Food Log ===");
+      lines.push("No meals logged today yet.");
+      lines.push("");
+    }
+
+    if (userCtx.recentLogs && userCtx.recentLogs.length > 0) {
+      lines.push("=== Recent Meal History (last 7 days) ===");
+      userCtx.recentLogs.slice(0, 10).forEach((l) => {
+        lines.push(`- [${l.date}] ${l.itemName} (${l.mealType}) — ${Math.round((l.calories || 0) * (l.servings || 1))} kcal`);
+      });
+      lines.push("");
+    }
+  }
+
+  return lines.join("\n");
+}
+
+// Helper to always send plain-text responses
 function sendPlain(res, text, status = 200) {
   try {
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
-  } catch (e) {
-    // ignore header set errors (very rare)
-  }
+  } catch (e) {}
   return res.status(status).send(typeof text === "string" ? text : String(text));
-}
-
-// Helper: format a single item into the SmartShelf DB text response
-function formatSingleItem(item) {
-  const summary = `Summary: ${item.name || "Item"} — expires on ${
-    item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : "no expiry recorded"
-  }.`;
-
-  const details = [
-    "Details:",
-    `• Brand: ${item.brand || "—"}`,
-    `• Quantity: ${item.quantity ?? "—"} ${item.unit || ""}`.trim(),
-    `• Location: ${item.location || "—"}`,
-    `• Status: ${item.status || "—"}`
-  ].join("\n");
-
-  const actions = [
-    "Suggested actions:",
-    `1. Mark as consumed — POST /api/items/${item.id}/consume`,
-    `2. Edit expiry — UI: Items → ${item.name || "Item"} → Edit`,
-    "3. Set reminder — UI: Reminders → Add Reminder"
-  ].join("\n");
-
-  return `${summary}\n\n${details}\n\n${actions}\n\nsource: SmartShelf DB`;
-}
-
-// Helper: format items list (expiry intent) into readable text
-function formatItemsList(items = [], days = null) {
-  const title = days != null
-    ? `Summary: Found ${items.length} item(s) expiring within ${days} day(s).`
-    : `Summary: Found ${items.length} item(s).`;
-
-  const detailsLines = items.map((it, idx) => {
-    const d = it.expiryDate ? new Date(it.expiryDate).toLocaleDateString() : "no expiry recorded";
-    return `${idx + 1}. ${it.name} — ${it.brand ? `${it.brand} — ` : ""}${d} — ${it.location || "—"} (${it.status || "—"})`;
-  });
-
-  const details = ["Details:"].concat(detailsLines).join("\n");
-
-  const actions = [
-    "Suggested actions:",
-    "1. Open Items → filter by expiry to view details.",
-    "2. Edit item expiry or set reminders from item details.",
-    "3. Mark consumed if already used."
-  ].join("\n");
-
-  return `${title}\n\n${details}\n\n${actions}\n\nsource: SmartShelf DB`;
 }
 
 // POST /api/chat
@@ -87,33 +142,39 @@ router.post("/", async (req, res) => {
     return sendPlain(res, "Missing userId or message.", 200);
   }
 
-  const skipKeywords = ["suggest", "recipe", "meal", "idea", "healthy", "diet"];
-  const isSuggestion = skipKeywords.some(kw => message.toLowerCase().includes(kw)) || req.body.skipSearchDB;
-
   let contextItems = null;
+  let userCtx = null;
 
-  // 1) Try database search first for context or fast-path
+  // 1) Try database search first for targeted item context
   try {
     const ai = await searchDB(userId, message);
-    console.debug("[ChatBotAssistant] ai-search result:", ai && (ai.found ? (ai.items ? `items:${ai.items.length}` : 'single item') : 'not found'));
-
+    console.debug("[ChatBotAssistant] ai-search result:", ai && (ai.found ? (ai.items ? `items:${ai.items.length}` : "single item") : "not found"));
     if (ai && ai.found) {
-        // Context Path: Collect items to pass to LLM
-        contextItems = ai.items || (ai.item ? [ai.item] : null);
+      contextItems = ai.items || (ai.item ? [ai.item] : null);
     }
   } catch (err) {
     console.error("[chatbot] DB search failed:", err?.message || err);
   }
 
-  // 2) LLM GENERATION → Send to LLM for recipes, tips, natural conversational answers
+  // 2) Fetch full user context (inventory, food logs)
   try {
-    const llmReply = await llmFormatter(message, contextItems);
+    userCtx = await getUserContext(userId);
+  } catch (err) {
+    console.error("[chatbot] context fetch failed:", err?.message || err);
+  }
+
+  // 3) Build rich context string
+  const richContext = buildContextString(contextItems, userCtx);
+
+  // 4) LLM GENERATION
+  try {
+    const llmReply = await llmFormatter(message, null, richContext);
     const replyText =
       typeof llmReply === "string"
         ? llmReply
         : llmReply && llmReply.summary
         ? `${llmReply.summary}${llmReply.details ? `\n\n${llmReply.details}` : ""}`
-        : String(llmReply || "I can help — ask me about items or recipes.");
+        : String(llmReply || "I can help — ask me about your items, nutrition, or food logs.");
 
     console.debug("[ChatBotAssistant] /chat reply:", typeof replyText === "string" ? replyText.slice(0, 200) : "non-string reply");
     return sendPlain(res, replyText, 200);
@@ -126,9 +187,6 @@ router.post("/", async (req, res) => {
 import { kitchenRecipe, shoppingRecommendations, dashboardSuggestions } from '../controllers/aiController.js';
 
 // Since chatbot is mounted at /api/chat, we can mount these here as /api/chat/kitchen and /api/chat/recommendations
-// Actually, in `server.js`, it's `app.use('/api/chat', chatbotRoute);`. 
-// So this becomes POST /api/chat/kitchen
-// Let's add the requireAuth middleware if possible, or just call the controller directly. 
 import { requireAuth } from '../middleware/authMiddleware.js';
 
 router.post("/kitchen", requireAuth, kitchenRecipe);

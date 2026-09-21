@@ -10,8 +10,14 @@ export function KitchenProvider({ children }) {
   const { items, lastUpdated } = useInventory();
   
   const [recipes, setRecipes] = useState([]);
+  const [cookedHistory, setCookedHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const markRecipeCooked = (recipe) => {
+    setCookedHistory(prev => [...prev, recipe]);
+    setRecipes(prev => prev.filter(r => r.title !== recipe.title));
+  };
   
   // Track the previous state to avoid unnecessary fetches
   const prevItemsHash = useRef("");
@@ -82,7 +88,7 @@ export function KitchenProvider({ children }) {
   };
 
   return (
-    <KitchenContext.Provider value={{ recipes, loading, error, refreshRecipes }}>
+    <KitchenContext.Provider value={{ recipes, cookedHistory, loading, error, refreshRecipes, markRecipeCooked }}>
       {children}
     </KitchenContext.Provider>
   );

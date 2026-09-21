@@ -7,6 +7,7 @@ import { getRecipientEmail } from '../utils/notify.js'
 import Activity from '../models/Activity.js'
 import { makeActivityPayload } from '../utils/activityHelper.js'
 import { regenerateKitchenRecipes } from './aiController.js'
+import { createNotification } from '../utils/cronJobs.js'
 
 const daysBetween = (a, b) => Math.ceil((b - a) / (1000 * 60 * 60 * 24))
 
@@ -82,6 +83,18 @@ export async function addItem(req, res, next) {
       await Activity.create(activityPayload)
     } catch (e) {
       console.warn('Activity logging failed (addItem):', e?.message || e)
+    }
+
+    // Notify user: new item added (in-app + email + push)
+    try {
+      await createNotification(
+        req.user.id.toString(),
+        `✅ New Item Added: ${item.name}`,
+        `${item.name} (${item.category}) has been added to your SmartShelf. Expires: ${new Date(item.expiryDate).toLocaleDateString()}.`,
+        'system'
+      )
+    } catch (e) {
+      console.warn('[itemController] new-item notification failed:', e?.message || e)
     }
 
     // auto-notify if expiring within 3 days (per-user push)
@@ -232,12 +245,32 @@ export async function markExpired(req, res, next) {
       status: { [Op.notIn]: ['expired', 'consumed'] }
     }
 
+    // Fetch items BEFORE updating so we have names + userIds for notifications
+    const itemsToExpire = await Item.findAll({ where: filter })
+
     const update = {
       status: 'expired',
       updatedAt: new Date()
     }
 
     const [modifiedCount] = await Item.update(update, { where: filter })
+
+    // Send individual notifications for each newly-expired item
+    if (modifiedCount > 0) {
+      const { notifyUser: sendNotif } = await import('../utils/notify.js')
+      for (const item of itemsToExpire) {
+        try {
+          await sendNotif(
+            item.userId.toString(),
+            `🚨 Item Expired: ${item.name}`,
+            `${item.name} has expired (expiry: ${new Date(item.expiryDate).toLocaleDateString()}). Please check and discard if needed.`,
+            'alert'
+          )
+        } catch (e) {
+          console.warn('[markExpired] notification failed for item', item.id, e?.message || e)
+        }
+      }
+    }
 
     try {
       if (modifiedCount > 0) {
@@ -265,6 +298,7 @@ export async function markExpired(req, res, next) {
     throw err
   }
 }
+
 
 export async function updateItem(req, res, next) {
   try {
