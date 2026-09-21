@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const sizes = {
   sm: "max-w-sm",
@@ -27,7 +28,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', zIn
     return () => { document.body.style.overflow = 'unset'; };
   }, [open]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <div className={`fixed inset-0 ${zIndex} flex ${placement === 'center' ? 'items-center' : 'items-start pt-[110px]'} justify-center p-4 pb-6`}>
@@ -60,6 +61,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', zIn
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
