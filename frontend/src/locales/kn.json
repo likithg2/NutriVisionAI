@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+    "smartShelf": "ಸ್ಮಾರ್ಟ್‌ಶೆಲ್ಫ್",
+    "tracker": "ಕ್ಯಾಲೋರಿ ಟ್ರ್ಯಾಕರ್",
+    "assistant": "ಸಹಾಯಕ",
+    "activity": "ಚಟುವಟಿಕೆ",
+    "kitchen": "ಅಡುಗೆ ಮನೆ",
+    "logout": "ಲಾಗ್ ಔಟ್",
+    "settings": "ಸೆಟ್ಟಿಂಗ್ಸ್"
+  },
+  "dashboard": {
+    "greeting": "ಶುಭ {{time}}",
+    "there": "ಸ್ನೇಹಿತರೆ",
+    "morning": "ಬೆಳಗ್ಗೆ",
+    "afternoon": "ಮಧ್ಯಾಹ್ನ",
+    "evening": "ಸಂಜೆ",
+    "todaysCalories": "ಇಂದಿನ ಕ್ಯಾಲೋರಿಗಳು",
+    "mealsLoggedToday": "ಇಂದು {{count}} ಊಟಗಳನ್ನು ದಾಖಲಿಸಲಾಗಿದೆ",
+    "itemsInStock": "ಇರುವ ವಸ್ತುಗಳು",
+    "ofTotalItems": "ಒಟ್ಟು {{count}} ವಸ್ತುಗಳಲ್ಲಿ",
+    "expiringSoon": "ಶೀಘ್ರದಲ್ಲೇ ಅವಧಿ ಮುಗಿಯುವ ವಸ್ತುಗಳು",
+    "withinDays": "7 ದಿನಗಳ ಒಳಗೆ",
+    "moneySaved": "ಉಳಿಸಿದ ಹಣ",
+    "fromConsumed": "ಬಳಸಿದ ವಸ್ತುಗಳಿಂದ",
+    "calorieTrend": "ಕ್ಯಾಲೋರಿ ಪ್ರವೃತ್ತಿ — ಕಳೆದ 7 ದಿನಗಳು",
+    "updatedNow": "ಈಗ ನವೀಕರಿಸಲಾಗಿದೆ",
+    "macroBreakdown": "ಮ್ಯಾಕ್ರೋ ವಿವರಣೆ",
+    "items": "ವಸ್ತುಗಳು",
+    "allClear": "ಎಲ್ಲವೂ ಸರಿಯಾಗಿದೆ!",
+    "noItemsExpiring": "ಯಾವುದೇ ವಸ್ತುಗಳ ಅವಧಿ ಮುಗಿಯುತ್ತಿಲ್ಲ",
+    "recentItems": "ಇತ್ತೀಚಿನ ಸ್ಮಾರ್ಟ್‌ಶೆಲ್ಫ್ ವಸ್ತುಗಳು",
+    "totalActiveItems": "{{count}} ಒಟ್ಟು ಸಕ್ರಿಯ ವಸ್ತುಗಳು",
+    "aiAssistant": "ಎಐ ಸಹಾಯಕ"
+  }
+}

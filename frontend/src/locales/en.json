@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "smartShelf": "SmartShelf",
+    "tracker": "Tracker",
+    "assistant": "Assistant",
+    "activity": "Activity",
+    "kitchen": "Kitchen",
+    "logout": "Logout",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "greeting": "Good {{time}}",
+    "there": "there",
+    "morning": "morning",
+    "afternoon": "afternoon",
+    "evening": "evening",
+    "todaysCalories": "Today's Calories",
+    "mealsLoggedToday": "{{count}} meals logged today",
+    "itemsInStock": "Items in Stock",
+    "ofTotalItems": "of {{count}} total items",
+    "expiringSoon": "Expiring Soon",
+    "withinDays": "within 7 days",
+    "moneySaved": "Money Saved",
+    "fromConsumed": "from consumed items",
+    "calorieTrend": "Calorie Trend — Last 7 Days",
+    "updatedNow": "Updated now",
+    "macroBreakdown": "Macro Breakdown",
+    "items": "items",
+    "allClear": "All clear!",
+    "noItemsExpiring": "No items expiring soon",
+    "recentItems": "Recent SmartShelf Items",
+    "totalActiveItems": "{{count}} total active items",
+    "aiAssistant": "AI Assistant"
+  }
+}

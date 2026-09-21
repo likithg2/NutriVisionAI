@@ -4,6 +4,7 @@ import { getItems } from "../api/items.js";
 import { getActivity } from "../api/activity.js";
 import { getDashboardSuggestions } from "../api/chat.js";
 import api from "../api/axios.js";
+import { useTranslation } from "react-i18next";
 import GlassCard from "../components/ui/GlassCard.jsx";
 import { SkeletonCard } from "../components/ui/Skeleton.jsx";
 import AnimatedCounter from "../components/ui/AnimatedCounter.jsx";
@@ -179,14 +180,14 @@ function LiveCountdown({ targetDate, days }) {
   return <span>{timeLeft}</span>;
 }
 
-function ExpiringSoonList({ items }) {
+function ExpiringSoonList({ items, t }) {
   if (!items.length) return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-12 h-12 rounded-2xl bg-mint-100 dark:bg-mint-900/30 flex items-center justify-center mb-3">
         <CalendarDays className="w-5 h-5 text-mint-500" />
       </div>
-      <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">All clear!</p>
-      <p className="text-xs text-zinc-400 mt-0.5">No items expiring soon</p>
+      <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t("dashboard.allClear")}</p>
+      <p className="text-xs text-zinc-400 mt-0.5">{t("dashboard.noItemsExpiring")}</p>
     </div>
   );
 
@@ -320,6 +321,7 @@ function InventoryGrid({ items }) {
 /* ───────────── MAIN ───────────── */
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [activities, setActivities] = useState([]);
   const [historyLogs, setHistoryLogs] = useState([]);
@@ -375,7 +377,6 @@ export default function Dashboard() {
       return { day: WEEKDAYS[d.getDay()], calories: Math.round(cals) };
     });
 
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(todayStart); todayEnd.setDate(todayEnd.getDate() + 1);
     const todayLogs = historyLogs.filter(l => { const c = new Date(l.date); return c >= todayStart && c < todayEnd; });
     const todayCalories = todayLogs.reduce((s, l) => s + ((Number(l.calories) || 0) * (Number(l.servings) || 1)), 0);
@@ -387,9 +388,9 @@ export default function Dashboard() {
 
   const greeting = () => {
     const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    return "Good evening";
+    if (h < 12) return t("dashboard.morning");
+    if (h < 17) return t("dashboard.afternoon");
+    return t("dashboard.evening");
   };
 
   /* ── loading state ── */
@@ -409,10 +410,10 @@ export default function Dashboard() {
 
   /* ── KPI definitions ── */
   const kpis = [
-    { icon: Flame, label: "Today's Calories", value: computed.todayCalories, suffix: " kcal", color: "bg-orange-100 dark:bg-orange-900/40 text-orange-500", subtext: `${computed.todayLogsCount} meals logged today` },
-    { icon: Package, label: "Items in Stock", value: computed.activeItems.length, suffix: "", color: "bg-blue-100 dark:bg-blue-900/40 text-blue-500", subtext: `of ${items.length} total items` },
-    { icon: AlertTriangle, label: "Expiring Soon", value: computed.expiringItems.length, suffix: " items", color: "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-500", subtext: "within 7 days" },
-    { icon: Zap, label: "Money Saved", value: computed.moneySaved, prefix: "₹", color: "bg-mint-100 dark:bg-mint-900/40 text-mint-600", subtext: "from consumed items" },
+    { icon: Flame, label: t("dashboard.todaysCalories"), value: computed.todayCalories, suffix: " kcal", color: "bg-orange-100 dark:bg-orange-900/40 text-orange-500", subtext: t("dashboard.mealsLoggedToday", { count: computed.todayLogsCount }) },
+    { icon: Package, label: t("dashboard.itemsInStock"), value: computed.activeItems.length, suffix: "", color: "bg-blue-100 dark:bg-blue-900/40 text-blue-500", subtext: t("dashboard.ofTotalItems", { count: items.length }) },
+    { icon: AlertTriangle, label: t("dashboard.expiringSoon"), value: computed.expiringItems.length, suffix: ` ${t("dashboard.items")}`, color: "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-500", subtext: t("dashboard.withinDays") },
+    { icon: Zap, label: t("dashboard.moneySaved"), value: computed.moneySaved, prefix: "₹", color: "bg-mint-100 dark:bg-mint-900/40 text-mint-600", subtext: t("dashboard.fromConsumed") },
   ];
 
   return (
@@ -423,7 +424,7 @@ export default function Dashboard() {
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
         </p>
         <h1 className="text-2xl font-bold mt-0.5">
-          {greeting()}, {user?.name?.split(" ")[0] || "there"} 👋
+          {t("dashboard.greeting", { time: greeting() })}, {user?.name?.split(" ")[0] || t("dashboard.there")} 👋
         </h1>
       </motion.div>
 
@@ -441,8 +442,8 @@ export default function Dashboard() {
         <div className="lg:col-span-2 flex flex-col gap-4">
           <GlassCard delay={0.24} hover={false} className="flex flex-col">
             <div className="flex items-center justify-between mb-4 shrink-0">
-              <p className="text-sm font-semibold">Calorie Trend — Last 7 Days</p>
-              <span className="text-xs text-zinc-400 flex items-center gap-1"><Clock className="w-3 h-3" /> Updated now</span>
+              <p className="text-sm font-semibold">{t("dashboard.calorieTrend")}</p>
+              <span className="text-xs text-zinc-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {t("dashboard.updatedNow")}</span>
             </div>
             <div className="flex-1 min-h-0">
               <CalorieTrend data={computed.trend} />
@@ -450,7 +451,7 @@ export default function Dashboard() {
           </GlassCard>
 
           <GlassCard delay={0.28} hover={false} className="flex flex-col">
-            <p className="text-sm font-semibold mb-4">Macro Breakdown</p>
+            <p className="text-sm font-semibold mb-4">{t("dashboard.macroBreakdown")}</p>
             <div className="flex-1 min-h-0">
               <MacroDonut protein={computed.totalProtein} carbs={computed.totalCarbs} fat={computed.totalFat} />
             </div>
@@ -463,14 +464,14 @@ export default function Dashboard() {
             <GlassCard delay={0.3} hover={false} className="flex flex-col h-full max-h-[400px] lg:max-h-none">
               <div className="flex items-center justify-between mb-4 shrink-0">
                 <p className="text-sm font-semibold flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-400" /> Expiring Soon
+                  <AlertTriangle className="w-4 h-4 text-amber-400" /> {t("dashboard.expiringSoon")}
                 </p>
                 <Badge color={computed.expiringItems.length > 0 ? "yellow" : "green"}>
-                  {computed.expiringItems.length} items
+                  {computed.expiringItems.length} {t("dashboard.items")}
                 </Badge>
               </div>
               <div className="flex-1 overflow-y-auto min-h-0 pr-1">
-                <ExpiringSoonList items={computed.expiringItems} />
+                <ExpiringSoonList items={computed.expiringItems} t={t} />
               </div>
             </GlassCard>
           </div>
@@ -480,8 +481,8 @@ export default function Dashboard() {
       {/* ── Inventory Grid ── */}
       <GlassCard delay={0.35} hover={false}>
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-semibold">Recent SmartShelf Items</p>
-          <span className="text-xs text-zinc-400">{computed.activeItems.length} total active items</span>
+          <p className="text-sm font-semibold">{t("dashboard.recentItems")}</p>
+          <span className="text-xs text-zinc-400">{t("dashboard.totalActiveItems", { count: computed.activeItems.length })}</span>
         </div>
         <InventoryGrid items={computed.activeItems} />
       </GlassCard>

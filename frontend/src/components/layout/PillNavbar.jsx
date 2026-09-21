@@ -1,20 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Menu, X, Sun, Moon, Bell, Search, LogOut, Check } from "lucide-react";
+import { Leaf, Menu, X, Sun, Moon, Bell, Search, LogOut, Check, Languages } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Modal from "../ui/Modal.jsx";
 import { getNotifications, getUnreadCount, markMany } from "../../api/notifications.js";
-
-const navLinks = [
-  { path: "/dashboard", label: "Dashboard" },
-  { path: "/inventory", label: "SmartShelf" },
-  { path: "/kitchen", label: "Kitchen" },
-  { path: "/calories", label: "Calorie Tracker" },
-  { path: "/activity", label: "Activity" },
-];
 
 export default function PillNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,6 +20,20 @@ export default function PillNavbar() {
   const navigate = useNavigate();
   const { dark, toggle } = useTheme();
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'kn' ? 'en' : 'kn';
+    i18n.changeLanguage(newLang);
+  };
+
+  const navLinks = [
+    { path: "/dashboard", label: t("nav.dashboard") },
+    { path: "/inventory", label: t("nav.smartShelf") },
+    { path: "/kitchen", label: t("nav.kitchen") },
+    { path: "/calories", label: t("nav.tracker") },
+    { path: "/activity", label: t("nav.activity") },
+  ];
   
   const initials = user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2) : "?";
 
@@ -110,7 +117,7 @@ export default function PillNavbar() {
                     className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors group outline-none block"
                     style={{ color: isActive ? (dark ? "#FDF6F0" : "#FF6B4A") : (dark ? "#C9B8AE" : "#6B6560") }}
                   >
-                    <span className="relative z-10 group-hover:text-[#FF6B4A] transition-colors">{link.label}</span>
+                    <span className="relative z-10 group-hover:text-[#FF6B4A] transition-colors">{link.label || link.name}</span>
                     {isActive && (
                       <motion.div
                         layoutId="activeTab"
@@ -157,6 +164,17 @@ export default function PillNavbar() {
                 {unreadCount > 0 && <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full" style={{ background: "#FF6B4A" }} />}
               </motion.button>
             </div>
+
+            {/* Language Toggle */}
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={toggleLanguage}
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors outline-none hover:text-[#FF6B4A]"
+              style={{ color: dark ? "#C9B8AE" : "#6B6560", background: dark ? "rgba(255,255,255,0.05)" : "#F3EEE8" }}
+              title="Toggle Language (English/Kannada)"
+            >
+              <Languages className="w-4 h-4" />
+            </motion.button>
 
             {/* Theme Toggle */}
             <motion.button
@@ -249,7 +267,7 @@ export default function PillNavbar() {
                     <motion.div key={link.path} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
                       <Link to={link.path} className="text-2xl font-semibold outline-none flex items-center gap-3 group"
                         style={{ color: isActive ? "#FF6B4A" : (dark ? "#FDF6F0" : "#1A1210") }}>
-                        {link.label}
+                        {link.label || link.name}
                         {isActive && <motion.div layoutId="mobileActive" className="w-2 h-2 rounded-full" style={{ background: "#FF6B4A" }} />}
                       </Link>
                     </motion.div>
