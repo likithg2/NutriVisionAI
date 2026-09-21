@@ -34,6 +34,7 @@ export default function CalorieTracker() {
   });
   const [loading, setLoading] = useState(true);
   const [showLogModal, setShowLogModal] = useState(false);
+  const [showScanModal, setShowScanModal] = useState(false);
   const [newLog, setNewLog] = useState({ itemName: '', quantity: '100', calories: '', protein: '', carbs: '', fat: '', mealType: 'snack' });
   
   const getLocalYYYYMMDD = (d = new Date()) => {
@@ -45,8 +46,15 @@ export default function CalorieTracker() {
   const [suggesting, setSuggesting] = useState(false);
   const [placeholderFact] = useState(() => INSPIRING_FACTS[Math.floor(Math.random() * INSPIRING_FACTS.length)]);
 
+  useEffect(() => {
+    if (showLogModal || showScanModal) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [showLogModal, showScanModal]);
+
   
   const fileInputRef = React.useRef(null);
+  const cameraInputRef = React.useRef(null);
   const [scanning, setScanning] = useState(false);
   const [aiEstimateLoading, setAiEstimateLoading] = useState(false);
 
@@ -325,13 +333,14 @@ export default function CalorieTracker() {
           </div>
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <button onClick={() => fileInputRef.current?.click()} disabled={scanning} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-white rounded-xl font-medium transition-colors shadow-lg" style={{ background: dark ? "rgba(255,255,255,0.1)" : "#1A1210" }}>
+          <button onClick={() => setShowScanModal(true)} disabled={scanning} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-white rounded-xl font-medium transition-colors shadow-lg" style={{ background: dark ? "rgba(255,255,255,0.1)" : "#1A1210" }}>
             {scanning ? <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> : <Camera className="w-4 h-4" />} Scan
           </button>
           <button onClick={() => setShowLogModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#FF6B4A] text-white rounded-xl font-medium hover:bg-[#E85A3A] transition-colors shadow-lg">
             <Plus className="w-4 h-4" /> Log
           </button>
-          <input type="file" ref={fileInputRef} onChange={handleScan} accept="image/*" className="hidden" />
+          <input type="file" ref={fileInputRef} onChange={(e) => { setShowScanModal(false); handleScan(e); }} accept="image/*" className="hidden" />
+          <input type="file" ref={cameraInputRef} onChange={(e) => { setShowScanModal(false); handleScan(e); }} accept="image/*" capture="environment" className="hidden" />
         </div>
       </motion.div>
 
@@ -573,7 +582,7 @@ export default function CalorieTracker() {
       {/* Log Modal */}
       <AnimatePresence>
         {showLogModal && (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pb-6 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={() => setShowLogModal(false)}>
+          <div className="fixed inset-0 z-40 flex items-start justify-center p-4 pb-6 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={() => setShowLogModal(false)}>
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-md backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10" style={{ marginTop: '110px', maxHeight: 'calc(100dvh - 140px)' }}>
               <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
                 <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
@@ -628,6 +637,44 @@ export default function CalorieTracker() {
                   </button>
                 </div>
               </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Scan Options Modal */}
+      <AnimatePresence>
+        {showScanModal && (
+          <div className="fixed inset-0 z-40 flex items-start justify-center p-4 pb-6 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={() => setShowScanModal(false)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-sm backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10" style={{ marginTop: '110px' }}>
+              <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
+                <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
+                  Scan Meal
+                </h2>
+              </div>
+              <div className="flex flex-col gap-3 p-6 pt-5">
+                <button 
+                  onClick={() => fileInputRef.current?.click()} 
+                  className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl font-medium transition-all"
+                  style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: dark ? '#FDF6F0' : '#1A1210' }}
+                >
+                  <SearchIcon className="w-5 h-5 text-[#FF6B4A]" /> Select a Picture
+                </button>
+                <button 
+                  onClick={() => cameraInputRef.current?.click()} 
+                  className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl font-medium transition-all"
+                  style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: dark ? '#FDF6F0' : '#1A1210' }}
+                >
+                  <Camera className="w-5 h-5 text-[#FF6B4A]" /> Take a Picture
+                </button>
+                <button 
+                  onClick={() => setShowScanModal(false)}
+                  className="mt-2 px-4 py-3 rounded-xl font-medium transition-colors" 
+                  style={{ color: dark ? '#C9B8AE' : '#6B6560' }}
+                >
+                  Cancel
+                </button>
               </div>
             </motion.div>
           </div>

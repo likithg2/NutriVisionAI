@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
-export default function Modal({ open, onClose, title, children, size = "md", zIndex = "z-[100]" }) {
+export default function Modal({ open, onClose, title, children, size = "md", zIndex = "z-40" }) {
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
