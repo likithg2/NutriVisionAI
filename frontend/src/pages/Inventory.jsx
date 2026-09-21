@@ -5,6 +5,8 @@ import { searchUSDA } from "../api/usda.js";
 import { getShoppingRecommendations } from "../api/chat.js";
 import { useNavigate } from "react-router-dom";
 import { useInventory } from "../context/InventoryContext.jsx";
+import { useTheme } from "../context/ThemeContext.jsx";
+import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { scanImage, estimateFood } from "../api/scanner.js";
@@ -84,6 +86,7 @@ function Toast({ msg, type }) {
 
 /* ─── Item Card ─── */
 function ItemCard({ item, onUse, delay }) {
+  const { t } = useTranslation();
   const days = daysUntil(item.expiryDate);
   const urgColor = days <= 3 ? "text-red-500" : days <= 7 ? "text-amber-500" : "text-green-500";
   
@@ -104,12 +107,12 @@ function ItemCard({ item, onUse, delay }) {
             {item.calories != null && <span>🔥 {item.calories} kcal</span>}
             {item.protein != null && <span>💪 {item.protein}g</span>}
             {item.quantity && <span>📦 {item.quantity} {item.unit}</span>}
-            {days !== Infinity && <span className={urgColor}>📅 {days <= 0 ? "Expired" : `${days}d left`}</span>}
+            {days !== Infinity && <span className={urgColor}>📅 {days <= 0 ? t("inventory.expired") : t("inventory.expiresIn", { days })}</span>}
           </div>
         </div>
         {item.status !== "expired" && item.status !== "consumed" && (
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-            <button onClick={() => onUse(item)} className="p-1.5 rounded-lg hover:bg-mint-500/20 text-zinc-400 hover:text-mint-500 transition-colors" title="Mark as Used">
+            <button onClick={() => onUse(item)} className="p-1.5 rounded-lg hover:bg-mint-500/20 text-zinc-400 hover:text-mint-500 transition-colors" title={t("inventory.markAsUsed", "Mark as Used")}>
               <CheckCircle2 className="w-4 h-4" />
             </button>
           </div>
@@ -122,6 +125,8 @@ function ItemCard({ item, onUse, delay }) {
 /* ─── MAIN ─── */
 export default function Inventory() {
   const { items, loading, refreshInventory } = useInventory();
+  const { dark } = useTheme();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
@@ -344,26 +349,29 @@ export default function Inventory() {
     <div className="space-y-5">
       <AnimatePresence><Toast msg={toast.msg} type={toast.type} /></AnimatePresence>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div><h1 className="text-2xl font-bold">SmartShelf</h1><p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">{items.length} items tracked</p></div>
+        <div>
+          <h1 className="text-2xl font-bold">{t("inventory.smartShelf", "SmartShelf")}</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">{items.length} {t("inventory.itemsTracked", "items tracked")}</p>
+        </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="ghost" onClick={() => navigate("/kitchen")} className="gap-2 text-[#FF6B4A] hover:bg-orange-500/10">
-            <ChefHat className="w-4 h-4" /> Don't know what to cook? Click here
+            <ChefHat className="w-4 h-4" /> {t("inventory.dontKnowWhatToCook", "Don't know what to cook? Click here")}
           </Button>
           <Button variant="ghost" onClick={() => setShopModalOpen(true)} className="gap-2">
-            <ShoppingCart className="w-4 h-4" /> Shopping
+            <ShoppingCart className="w-4 h-4" /> {t("inventory.shopping", "Shopping")}
           </Button>
-          <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add Item</Button>
+          <Button onClick={openAdd}><Plus className="w-4 h-4" /> {t("inventory.addItem", "Add Item")}</Button>
         </div>
       </div>
 
       <GlassCard hover={false} className="flex flex-wrap items-center gap-3 p-3">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search items..." className="w-full glass rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-mint-500/40" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("inventory.searchPlaceholder", "Search items...")} className="w-full glass rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-mint-500/40" />
         </div>
         <div className="flex gap-1.5 flex-wrap">
           {["all","active","expired","consumed"].map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-all ${filter === f ? "bg-mint-500 text-white" : "glass text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100"}`}>{f}</button>
+            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-all ${filter === f ? "bg-mint-500 text-white" : "glass text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100"}`}>{t(`inventory.filter_${f}`, f)}</button>
           ))}
         </div>
       </GlassCard>
@@ -374,17 +382,17 @@ export default function Inventory() {
         <div className="space-y-8">
           {/* Active Items */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Active Items</h2>
+            <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">{t("inventory.activeItems", "Active Items")}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <AnimatePresence>{activeFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUse} delay={i * 0.04} />)}</AnimatePresence>
-              {!activeFiltered.length && <div className="col-span-full text-center py-10 text-zinc-400">No active items found.</div>}
+              {!activeFiltered.length && <div className="col-span-full text-center py-10 text-zinc-400">{t("inventory.noActiveItems", "No active items found.")}</div>}
             </div>
           </div>
 
           {/* Discarded Items (Expired) */}
           {discardFiltered.length > 0 && (
             <div className="pt-6 border-t border-black/5 dark:border-white/5">
-              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Discarded / Expired</h2>
+              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">{t("inventory.discardedExpired", "Discarded / Expired")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <AnimatePresence>{discardFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUse} delay={i * 0.04} />)}</AnimatePresence>
               </div>
@@ -394,14 +402,14 @@ export default function Inventory() {
       )}
 
       {/* ── ADD/EDIT MODAL ── */}
-      <Modal open={modalOpen} onClose={closeModal} title={editItem ? "Edit Item" : "Add New Item"} size="lg">
+      <Modal open={modalOpen} onClose={closeModal} title={editItem ? t("inventory.editItem", "Edit Item") : t("inventory.addNewItem", "Add New Item")} size="lg">
         {!editItem && (
           <div className="flex p-1 mb-6 rounded-xl" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            {[["manual","Manual Entry","📝"],["scan","AI Scan","🤖"]].map(([t, label, emoji]) => (
-              <button key={t} type="button" onClick={() => setFormTab(t)}
+            {[["manual","Manual Entry","📝"],["scan","AI Scan","🤖"]].map(([tKey, label, emoji]) => (
+              <button key={tKey} type="button" onClick={() => setFormTab(tKey)}
                 className="relative flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors z-10"
-                style={{ color: formTab === t ? "inherit" : "rgba(161,161,170,0.6)" }}>
-                {formTab === t && <motion.span layoutId="form-tab" className="absolute inset-0 rounded-lg glass" transition={{ type:"spring", bounce:0.2, duration:0.4 }} />}
+                style={{ color: formTab === tKey ? "inherit" : "rgba(161,161,170,0.6)" }}>
+                {formTab === tKey && <motion.span layoutId="form-tab" className="absolute inset-0 rounded-lg glass" transition={{ type:"spring", bounce:0.2, duration:0.4 }} />}
                 <span className="relative z-10 flex items-center justify-center gap-2">{emoji} {label}</span>
               </button>
             ))}
@@ -430,12 +438,12 @@ export default function Inventory() {
                   </div>
                 )}
                 <div className="text-center">
-                  <p className="text-sm font-medium">{scanLoading ? "Analyzing with AI..." : "Drop image or click to upload"}</p>
-                  <p className="text-xs text-zinc-500 mt-1">JPG, PNG up to 10MB — AI will identify the food</p>
+                  <p className="text-sm font-medium">{scanLoading ? t("inventory.analyzingWithAi", "Analyzing with AI...") : t("inventory.dropImageOrClick", "Drop image or click to upload")}</p>
+                  <p className="text-xs text-zinc-500 mt-1">{t("inventory.imageFormats", "JPG, PNG up to 10MB — AI will identify the food")}</p>
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => doScan(e.target.files?.[0])} />
               </div>
-              {scanLoading && <p className="text-center text-xs text-mint-400 mt-3 animate-pulse">✨ Identifying food and estimating nutrition...</p>}
+              {scanLoading && <p className="text-center text-xs text-mint-400 mt-3 animate-pulse">✨ {t("inventory.identifyingFood", "Identifying food and estimating nutrition...")}</p>}
             </motion.div>
           )}
 
@@ -446,14 +454,14 @@ export default function Inventory() {
 
               {/* Name with USDA autocomplete */}
               <div className="relative">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">Item Name *</label>
+                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">{t("inventory.itemName", "Item Name")} *</label>
                 <div className="relative">
                   <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                   <input
                     value={editItem ? form.name : usda.query}
                     onChange={e => { if (!editItem) { usda.search(e.target.value); setForm(f => ({...f, name: e.target.value})); } else setForm(f=>({...f,name:e.target.value})); }}
                     onFocus={() => usda.results.length > 0 && usda.setOpen(true)}
-                    placeholder="Start typing to search USDA database..."
+                    placeholder={t("inventory.searchUsdaPlaceholder", "Start typing to search USDA database...")}
                     className="w-full glass rounded-xl pl-10 pr-10 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/40"
                     required
                   />
@@ -470,7 +478,7 @@ export default function Inventory() {
                           <Sparkles className="w-3.5 h-3.5 text-mint-400 mt-1 shrink-0" />
                           <div className="min-w-0">
                             <div className="font-medium truncate">{food.description || food.name}</div>
-                            <div className="text-xs text-zinc-500 truncate">{food.brandOwner || food.brand || "Generic"}</div>
+                            <div className="text-xs text-zinc-500 truncate">{food.brandOwner || food.brand || t("inventory.generic", "Generic")}</div>
                           </div>
                         </button>
                       ))}
@@ -480,9 +488,9 @@ export default function Inventory() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Input label="Brand" value={form.brand} onChange={e => setForm(f=>({...f,brand:e.target.value}))} />
+                <Input label={t("inventory.brand", "Brand")} value={form.brand} onChange={e => setForm(f=>({...f,brand:e.target.value}))} />
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Category</label>
+                  <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{t("inventory.category", "Category")}</label>
                   <select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} className="glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/40 bg-transparent">
                     {CATS.map(c => <option key={c} value={c} className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{c}</option>)}
                   </select>
@@ -491,44 +499,44 @@ export default function Inventory() {
 
               <div className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
                 <Input 
-                  label="Quantity" 
+                  label={t("inventory.quantity", "Quantity")} 
                   type="number" 
                   value={form.quantity} 
                   onChange={e=>setForm(f=>({...f,quantity:e.target.value}))} 
                   onBlur={() => { if (form.quantity && (editItem ? form.name.length >= 2 : usda.query.length >= 2)) handleAnalyseItem(); }}
                 />
-                <Input label="Unit" value={form.unit} onChange={e=>setForm(f=>({...f,unit:e.target.value}))} />
+                <Input label={t("inventory.unit", "Unit")} value={form.unit} onChange={e=>setForm(f=>({...f,unit:e.target.value}))} />
                 <button
                   type="button"
                   onClick={handleAnalyseItem}
                   disabled={aiEstimateLoading || (!editItem ? usda.query.length < 2 : form.name.length < 2) || !form.quantity}
                   className="flex items-center justify-center gap-2 px-4 h-[42px] rounded-xl font-medium text-sm transition-all disabled:opacity-40"
                   style={{ background: 'linear-gradient(135deg, #FF6B4A, #E55540)', color: 'white' }}
-                  title="Auto-fill macros & details"
+                  title={t("inventory.autoFillMacros", "Auto-fill macros & details")}
                 >
                   {aiEstimateLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                  {aiEstimateLoading ? 'Analysing...' : 'Analyse'}
+                  {aiEstimateLoading ? t("inventory.analysing", "Analysing...") : t("inventory.analyse", "Analyse")}
                 </button>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Input label="Expiry Date *" type="date" value={form.expiryDate} onChange={e=>setForm(f=>({...f,expiryDate:e.target.value}))} required icon={CalendarDays} />
-                <Input label="Estimated Cost (₹)" type="number" step="0.01" value={form.estimatedCost} onChange={e=>setForm(f=>({...f,estimatedCost:e.target.value}))} />
+                <Input label={`${t("inventory.expiryDate", "Expiry Date")} *`} type="date" value={form.expiryDate} onChange={e=>setForm(f=>({...f,expiryDate:e.target.value}))} required icon={CalendarDays} />
+                <Input label={t("inventory.estimatedCost", "Estimated Cost (₹)")} type="number" step="0.01" value={form.estimatedCost} onChange={e=>setForm(f=>({...f,estimatedCost:e.target.value}))} />
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Macros (per serving)</p>
+                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">{t("inventory.macrosPerServing", "Macros (per serving)")}</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <Input label="Calories (kcal)" type="number" value={form.calories} onChange={e=>setForm(f=>({...f,calories:e.target.value}))} />
-                  <Input label="Protein (g)" type="number" value={form.protein} onChange={e=>setForm(f=>({...f,protein:e.target.value}))} />
-                  <Input label="Carbs (g)" type="number" value={form.carbs} onChange={e=>setForm(f=>({...f,carbs:e.target.value}))} />
-                  <Input label="Fat (g)" type="number" value={form.fat} onChange={e=>setForm(f=>({...f,fat:e.target.value}))} />
+                  <Input label={t("inventory.calories", "Calories (kcal)")} type="number" value={form.calories} onChange={e=>setForm(f=>({...f,calories:e.target.value}))} />
+                  <Input label={t("inventory.protein", "Protein (g)")} type="number" value={form.protein} onChange={e=>setForm(f=>({...f,protein:e.target.value}))} />
+                  <Input label={t("inventory.carbs", "Carbs (g)")} type="number" value={form.carbs} onChange={e=>setForm(f=>({...f,carbs:e.target.value}))} />
+                  <Input label={t("inventory.fat", "Fat (g)")} type="number" value={form.fat} onChange={e=>setForm(f=>({...f,fat:e.target.value}))} />
                 </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-2 border-t border-white/10">
-                <Button variant="ghost" type="button" onClick={closeModal}>Cancel</Button>
-                <Button type="submit" loading={saving}>{editItem ? "Save Changes" : "Add to Inventory"}</Button>
+                <Button variant="ghost" type="button" onClick={closeModal}>{t("common.cancel", "Cancel")}</Button>
+                <Button type="submit" loading={saving}>{editItem ? t("common.saveChanges", "Save Changes") : t("inventory.addToInventory", "Add to Inventory")}</Button>
               </div>
             </motion.form>
           )}
@@ -538,7 +546,7 @@ export default function Inventory() {
       {/* ── SHOPPING RECOMMENDATIONS MODAL ── */}
       <Modal open={shopModalOpen} onClose={() => setShopModalOpen(false)} title={
         <div className="flex justify-between items-center w-full">
-          <span>Smart Shopping List</span>
+          <span>{t("inventory.smartShoppingList", "Smart Shopping List")}</span>
           <button onClick={(e) => { e.stopPropagation(); fetchRecommendations(true); }} disabled={shopLoading} className={`p-1 mr-4 transition-colors ${shopLoading ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'text-sky-400 hover:text-sky-500'}`}>
             <RotateCw className={`w-5 h-5 ${shopLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -550,7 +558,7 @@ export default function Inventory() {
             <ShoppingCart className="w-6 h-6 text-white" />
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Get cost-effective grocery recommendations based on your current inventory.
+            {t("inventory.shoppingDesc", "Get cost-effective grocery recommendations based on your current inventory.")}
           </p>
         </div>
 
@@ -576,7 +584,7 @@ export default function Inventory() {
                             setModalOpen(true);
                           }}
                           className="absolute right-3 top-3 p-2 rounded-full bg-zinc-100 hover:bg-sky-500 hover:text-white dark:bg-white/5 dark:hover:bg-sky-500 transition-colors text-zinc-500 dark:text-zinc-400 shadow-sm"
-                          title="Add to Inventory"
+                          title={t("inventory.addToInventory", "Add to Inventory")}
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -607,11 +615,11 @@ export default function Inventory() {
       </Modal>
       
       {/* ── USE ITEM MODAL ── */}
-      <Modal open={useModalOpen} onClose={closeUseModal} title="Update Usage" size="md">
+      <Modal open={useModalOpen} onClose={closeUseModal} title={t("inventory.updateUsage", "Update Usage")} size="md">
         <div className="space-y-6">
           <div className="text-center">
             <h3 className="text-lg font-semibold">{useItem?.name}</h3>
-            {useItem?.quantity && <p className="text-sm text-zinc-500 mt-1">Current Quantity: {useItem.quantity} {useItem.unit}</p>}
+            {useItem?.quantity && <p className="text-sm text-zinc-500 mt-1">{t("inventory.currentQuantity", "Current Quantity")}: {useItem.quantity} {useItem.unit}</p>}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
