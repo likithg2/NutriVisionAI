@@ -90,7 +90,8 @@ function ItemCard({ item, onUse, onSelect, delay }) {
   const urgColor = days <= 3 ? "text-red-500" : days <= 7 ? "text-amber-500" : "text-green-500";
   
   let bg = "rgba(34,197,94,0.1)"; // fresh / green
-  if (days <= 3) bg = "rgba(239,68,68,0.15)"; // red
+  if (item.status === "consumed") bg = "rgba(56,189,248,0.15)"; // blue
+  else if (days <= 3) bg = "rgba(239,68,68,0.15)"; // red
   else if (days <= 7) bg = "rgba(245,158,11,0.15)"; // yellow 
   
   return (
@@ -381,11 +382,8 @@ export default function Inventory() {
   });
 
   const activeFiltered = filtered.filter(i => i.status !== "expired" && i.status !== "consumed");
-  const discardFiltered = filtered.filter(i => i.status === "expired" || i.status === "consumed").sort((a, b) => {
-    if (a.status === "consumed" && b.status === "expired") return -1;
-    if (a.status === "expired" && b.status === "consumed") return 1;
-    return 0;
-  });
+  const consumedFiltered = filtered.filter(i => i.status === "consumed");
+  const expiredFiltered = filtered.filter(i => i.status === "expired");
 
   return (
     <div className="space-y-5">
@@ -431,12 +429,22 @@ export default function Inventory() {
             </div>
           </div>
 
-          {/* Discarded Items (Expired) */}
-          {discardFiltered.length > 0 && (
+          {/* Consumed Items */}
+          {consumedFiltered.length > 0 && (
             <div className="pt-6 border-t border-black/5 dark:border-white/5">
-              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Consumed / Expired</h2>
+              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Consumed Items</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <AnimatePresence>{discardFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
+                <AnimatePresence>{consumedFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
+              </div>
+            </div>
+          )}
+
+          {/* Discarded Items (Expired) */}
+          {expiredFiltered.length > 0 && (
+            <div className="pt-6 border-t border-black/5 dark:border-white/5">
+              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Discarded / Expired</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <AnimatePresence>{expiredFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
               </div>
             </div>
           )}
