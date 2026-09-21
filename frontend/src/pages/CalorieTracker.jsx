@@ -32,6 +32,7 @@ export default function CalorieTracker() {
     consumed: { calories: 0, protein: 0, carbs: 0, fat: 0 }, 
     logs: [] 
   });
+  const [loading, setLoading] = useState(true);
   const [todayLogs, setTodayLogs] = useState([]);
   const [logsLoading, setLogsLoading] = useState(true);
 
@@ -58,11 +59,6 @@ export default function CalorieTracker() {
   const [suggesting, setSuggesting] = useState(false);
   const [placeholderFact] = useState(() => INSPIRING_FACTS[Math.floor(Math.random() * INSPIRING_FACTS.length)]);
 
-  useEffect(() => {
-    if (showLogModal || showScanModal) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
-  }, [showLogModal, showScanModal]);
 
   
   const fileInputRef = React.useRef(null);
