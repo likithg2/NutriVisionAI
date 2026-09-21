@@ -28,11 +28,11 @@ export default function Modal({ open, onClose, title, children, size = 'md', zIn
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }}
-          className={`fixed inset-0 ${zIndex} flex items-center justify-center p-4 pb-6`}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}
+          className={`fixed inset-0 ${zIndex} flex items-start justify-center p-4 pt-[110px] pb-6`}
           onClick={onClose}
         >
-          <div className="absolute inset-0 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" />
+          <div className="absolute inset-0 backdrop-blur-2xl bg-white/5 dark:bg-black/10" />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

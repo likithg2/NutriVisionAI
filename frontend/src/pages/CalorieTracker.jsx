@@ -588,106 +588,80 @@ export default function CalorieTracker() {
       </motion.div>
 
       {/* Log Modal */}
-      <AnimatePresence>
-        {showLogModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="fixed inset-0 z-40 flex items-center justify-center p-4 pb-6 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" onClick={() => setShowLogModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-lg rounded-2xl z-10 bg-white/70 dark:bg-[#1A1210]/70 backdrop-blur-3xl border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10" style={{ maxHeight: '90dvh' }}>
-              <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
-                <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
-                  Log a Meal
-                  {aiEstimateLoading && <Loader2 className="w-5 h-5 animate-spin text-[#FF6B4A]" />}
-                </h2>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto p-6 pt-5">
-                <form onSubmit={handleLogMeal} className="space-y-4">
-                  <Input label="Food Name" required value={newLog.itemName} onChange={e => setNewLog({...newLog, itemName: e.target.value})} placeholder="e.g. Chicken Salad" />
-                <div className="flex gap-3 items-end">
-                  <div className="flex-1">
-                    <Input label="Quantity (g/ml)" required type="number" value={newLog.quantity} onChange={e => setNewLog({...newLog, quantity: e.target.value})} placeholder="100" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAnalyse}
-                    disabled={aiEstimateLoading || !newLog.itemName || newLog.itemName.length < 2 || !newLog.quantity}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all disabled:opacity-40 shrink-0 mb-[2px]"
-                    style={{ background: 'linear-gradient(135deg, #FF6B4A, #E55540)', color: 'white' }}
-                  >
-                    {aiEstimateLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SearchIcon className="w-4 h-4" />}
-                    {aiEstimateLoading ? 'Analysing...' : 'Analyse'}
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <Input label="Calories" required type="number" value={newLog.calories} onChange={e => setNewLog({...newLog, calories: e.target.value})} placeholder="kcal" />
-                  
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
-                    <select value={newLog.mealType} onChange={e => setNewLog({...newLog, mealType: e.target.value})} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? "#FDF6F0" : "#1A1210" }}>
-                      <option value="breakfast" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Breakfast</option>
-                      <option value="lunch" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Lunch</option>
-                      <option value="dinner" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Dinner</option>
-                      <option value="snack" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Snack</option>
-                    </select>
-                  </div>
-                </div>
+      <Modal open={showLogModal} onClose={() => setShowLogModal(false)} title={<div className="flex items-center gap-2">Log a Meal {aiEstimateLoading && <Loader2 className="w-5 h-5 animate-spin text-[#FF6B4A]" />}</div>} size="lg">
+        <form onSubmit={handleLogMeal} className="space-y-4">
+          <Input label="Food Name" required value={newLog.itemName} onChange={e => setNewLog({...newLog, itemName: e.target.value})} placeholder="e.g. Chicken Salad" />
+        <div className="flex gap-3 items-end">
+          <div className="flex-1">
+            <Input label="Quantity (g/ml)" required type="number" value={newLog.quantity} onChange={e => setNewLog({...newLog, quantity: e.target.value})} placeholder="100" />
+          </div>
+          <button
+            type="button"
+            onClick={handleAnalyse}
+            disabled={aiEstimateLoading || !newLog.itemName || newLog.itemName.length < 2 || !newLog.quantity}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all disabled:opacity-40 shrink-0 mb-[2px]"
+            style={{ background: 'linear-gradient(135deg, #FF6B4A, #E55540)', color: 'white' }}
+          >
+            {aiEstimateLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SearchIcon className="w-4 h-4" />}
+            {aiEstimateLoading ? 'Analysing...' : 'Analyse'}
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Calories" required type="number" value={newLog.calories} onChange={e => setNewLog({...newLog, calories: e.target.value})} placeholder="kcal" />
+          
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
+            <select value={newLog.mealType} onChange={e => setNewLog({...newLog, mealType: e.target.value})} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? "#FDF6F0" : "#1A1210" }}>
+              <option value="breakfast" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Breakfast</option>
+              <option value="lunch" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Lunch</option>
+              <option value="dinner" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Dinner</option>
+              <option value="snack" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Snack</option>
+            </select>
+          </div>
+        </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <Input label="Protein (g)" type="number" value={newLog.protein} onChange={e => setNewLog({...newLog, protein: e.target.value})} />
-                  <Input label="Carbs (g)" type="number" value={newLog.carbs} onChange={e => setNewLog({...newLog, carbs: e.target.value})} />
-                  <Input label="Fat (g)" type="number" value={newLog.fat} onChange={e => setNewLog({...newLog, fat: e.target.value})} />
-                </div>
+        <div className="grid grid-cols-3 gap-4">
+          <Input label="Protein (g)" type="number" value={newLog.protein} onChange={e => setNewLog({...newLog, protein: e.target.value})} />
+          <Input label="Carbs (g)" type="number" value={newLog.carbs} onChange={e => setNewLog({...newLog, carbs: e.target.value})} />
+          <Input label="Fat (g)" type="number" value={newLog.fat} onChange={e => setNewLog({...newLog, fat: e.target.value})} />
+        </div>
 
-                <div className="flex justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setShowLogModal(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>Cancel</button>
-                  <button type="submit" disabled={aiEstimateLoading} className="px-5 py-2.5 rounded-xl font-medium bg-[#FF6B4A] text-white hover:bg-[#E85A3A] transition-colors disabled:opacity-50">
-                    {aiEstimateLoading ? 'Estimating...' : 'Add Meal'}
-                  </button>
-                </div>
-              </form>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <div className="flex justify-end gap-3 pt-4">
+          <button type="button" onClick={() => setShowLogModal(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>Cancel</button>
+          <button type="submit" disabled={aiEstimateLoading} className="px-5 py-2.5 rounded-xl font-medium bg-[#FF6B4A] text-white hover:bg-[#E85A3A] transition-colors disabled:opacity-50">
+            {aiEstimateLoading ? 'Estimating...' : 'Add Meal'}
+          </button>
+        </div>
+      </form>
+      </Modal>
 
       {/* Scan Options Modal */}
-      <AnimatePresence>
-        {showScanModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="fixed inset-0 z-40 flex items-center justify-center p-4 pb-6 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" onClick={() => setShowScanModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-sm backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10">
-              <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
-                <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
-                  Scan Meal
-                </h2>
-              </div>
-              <div className="flex flex-col gap-3 p-6 pt-5">
-                <button 
-                  onClick={() => fileInputRef.current?.click()} 
-                  className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl font-medium transition-all"
-                  style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: dark ? '#FDF6F0' : '#1A1210' }}
-                >
-                  <SearchIcon className="w-5 h-5 text-[#FF6B4A]" /> Select a Picture
-                </button>
-                <button 
-                  onClick={() => cameraInputRef.current?.click()} 
-                  className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl font-medium transition-all"
-                  style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: dark ? '#FDF6F0' : '#1A1210' }}
-                >
-                  <Camera className="w-5 h-5 text-[#FF6B4A]" /> Take a Picture
-                </button>
-                <button 
-                  onClick={() => setShowScanModal(false)}
-                  className="mt-2 px-4 py-3 rounded-xl font-medium transition-colors" 
-                  style={{ color: dark ? '#C9B8AE' : '#6B6560' }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Modal open={showScanModal} onClose={() => setShowScanModal(false)} title="Scan Meal" size="sm">
+        <div className="flex flex-col gap-3">
+          <button 
+            onClick={() => fileInputRef.current?.click()} 
+            className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl font-medium transition-all"
+            style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: dark ? '#FDF6F0' : '#1A1210' }}
+          >
+            <SearchIcon className="w-5 h-5 text-[#FF6B4A]" /> Select a Picture
+          </button>
+          <button 
+            onClick={() => cameraInputRef.current?.click()} 
+            className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl font-medium transition-all"
+            style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: dark ? '#FDF6F0' : '#1A1210' }}
+          >
+            <Camera className="w-5 h-5 text-[#FF6B4A]" /> Take a Picture
+          </button>
+          <button 
+            onClick={() => setShowScanModal(false)}
+            className="mt-2 px-4 py-3 rounded-xl font-medium transition-colors" 
+            style={{ color: dark ? '#C9B8AE' : '#6B6560' }}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
 
     </div>
   );
