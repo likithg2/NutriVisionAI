@@ -543,7 +543,7 @@ export default function Inventory() {
             <RotateCw className={`w-5 h-5 ${shopLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
-      } size="lg">
+      } size="5xl" placement="center">
         <div className="flex flex-col items-center justify-center text-center mb-6 space-y-3">
           <div className="w-12 h-12 rounded-full flex items-center justify-center relative"
                style={{ background: "linear-gradient(135deg, #38bdf8, #818cf8)", boxShadow: "0 4px 20px rgba(56, 189, 248, 0.4)" }}>

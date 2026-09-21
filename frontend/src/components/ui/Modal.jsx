@@ -9,10 +9,13 @@ const sizes = {
   lg: "max-w-lg",
   xl: "max-w-xl",
   "2xl": "max-w-2xl",
-  "3xl": "max-w-3xl"
+  "3xl": "max-w-3xl",
+  "4xl": "max-w-4xl",
+  "5xl": "max-w-5xl",
+  "full": "max-w-[95vw]"
 };
 
-export default function Modal({ open, onClose, title, children, size = 'md', zIndex = 'z-50' }) {
+export default function Modal({ open, onClose, title, children, size = 'md', zIndex = 'z-50', placement = 'top' }) {
   const { dark } = useTheme();
 
   useEffect(() => {
@@ -29,7 +32,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', zIn
       {open && (
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}
-          className={`fixed inset-0 ${zIndex} flex items-start justify-center p-4 pt-[110px] pb-6`}
+          className={`fixed inset-0 ${zIndex} flex ${placement === 'center' ? 'items-center' : 'items-start pt-[110px]'} justify-center p-4 pb-6`}
           onClick={onClose}
         >
           <div className="absolute inset-0 backdrop-blur-2xl bg-white/5 dark:bg-black/10" />
