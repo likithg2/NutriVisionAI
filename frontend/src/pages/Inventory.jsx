@@ -381,7 +381,11 @@ export default function Inventory() {
   });
 
   const activeFiltered = filtered.filter(i => i.status !== "expired" && i.status !== "consumed");
-  const discardFiltered = filtered.filter(i => i.status === "expired");
+  const discardFiltered = filtered.filter(i => i.status === "expired" || i.status === "consumed").sort((a, b) => {
+    if (a.status === "consumed" && b.status === "expired") return -1;
+    if (a.status === "expired" && b.status === "consumed") return 1;
+    return 0;
+  });
 
   return (
     <div className="space-y-5">
@@ -430,7 +434,7 @@ export default function Inventory() {
           {/* Discarded Items (Expired) */}
           {discardFiltered.length > 0 && (
             <div className="pt-6 border-t border-black/5 dark:border-white/5">
-              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Discarded / Expired</h2>
+              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Consumed / Expired</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <AnimatePresence>{discardFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
               </div>
