@@ -165,6 +165,9 @@ export default function PillNavbar() {
               </motion.button>
             </div>
 
+            {/* Google Translate Widget Container */}
+            <div id="google_translate_element" className="hidden sm:block [&>div]:!h-9 [&>div>div]:!h-9 [&_.goog-te-combo]:!h-9 [&_.goog-te-combo]:!rounded-xl [&_.goog-te-combo]:!text-sm [&_.goog-te-combo]:!border-none [&_.goog-te-combo]:!bg-zinc-100 dark:[&_.goog-te-combo]:!bg-zinc-800 dark:[&_.goog-te-combo]:!text-zinc-200" />
+
             {/* Language Toggle */}
             <motion.button
               whileTap={{ scale: 0.92 }}

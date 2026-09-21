@@ -19,6 +19,13 @@
     color: #FDF6F0;
   }
 
+  /* Override Google Translate top banner & margin */
+  body { top: 0 !important; }
+  .goog-te-banner-frame { display: none !important; }
+  .goog-tooltip { display: none !important; }
+  .goog-tooltip:hover { display: none !important; }
+  .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { @apply bg-transparent; }
   ::-webkit-scrollbar-thumb { @apply rounded-full; background: #E0D5C8; }
