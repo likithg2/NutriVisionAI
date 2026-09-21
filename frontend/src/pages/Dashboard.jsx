@@ -364,16 +364,15 @@ export default function Dashboard() {
     /* calorie trend: aggregate logs by consumption day over last 7 days */
     const trend = Array.from({ length: 7 }, (_, idx) => {
       const d = new Date(now); d.setDate(d.getDate() - (6 - idx));
-      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1);
+      const dStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
       const cals = historyLogs
-        .filter(l => { const c = new Date(l.date); return c >= dayStart && c < dayEnd; })
+        .filter(l => l.date === dStr || l.date?.startsWith(dStr))
         .reduce((s, l) => s + ((Number(l.calories) || 0) * (Number(l.servings) || 1)), 0);
       return { day: WEEKDAYS[d.getDay()], calories: Math.round(cals) };
     });
 
-    const todayEnd = new Date(todayStart); todayEnd.setDate(todayEnd.getDate() + 1);
-    const todayLogs = historyLogs.filter(l => { const c = new Date(l.date); return c >= todayStart && c < todayEnd; });
+    const todayStr = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    const todayLogs = historyLogs.filter(l => l.date === todayStr || l.date?.startsWith(todayStr));
     const todayCalories = todayLogs.reduce((s, l) => s + ((Number(l.calories) || 0) * (Number(l.servings) || 1)), 0);
     const totalProtein = todayLogs.reduce((s, l) => s + ((Number(l.protein) || 0) * (Number(l.servings) || 1)), 0);
     const totalCarbs = todayLogs.reduce((s, l) => s + ((Number(l.carbs) || 0) * (Number(l.servings) || 1)), 0);
