@@ -85,7 +85,7 @@ function Toast({ msg, type }) {
 }
 
 /* ─── Item Card ─── */
-function ItemCard({ item, onUse, onSelect, delay }) {
+function ItemCard({ item, onSelect, delay }) {
   const days = daysUntil(item.expiryDate);
   const urgColor = days <= 3 ? "text-red-500" : days <= 7 ? "text-amber-500" : "text-green-500";
   
@@ -110,13 +110,6 @@ function ItemCard({ item, onUse, onSelect, delay }) {
             {days !== Infinity && <span className={urgColor}>📅 {days <= 0 ? "Expired" : `Expires in ${days}d`}</span>}
           </div>
         </div>
-        {item.status !== "expired" && item.status !== "consumed" && (
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-            <button onClick={(e) => { e.stopPropagation(); onUse(item); }} className="p-1.5 rounded-lg hover:bg-mint-500/20 text-zinc-400 hover:text-mint-500 transition-colors" title="Mark as Used">
-              <CheckCircle2 className="w-4 h-4" />
-            </button>
-          </div>
-        )}
       </div>
     </GlassCard>
   );
@@ -185,51 +178,13 @@ export default function Inventory() {
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setFormTab("manual"); usda.setQuery(""); usda.setOpen(false); setScanPreview(null); setModalOpen(true); };
   const closeModal = () => { setModalOpen(false); setEditItem(null); setScanPreview(null); };
 
-  const openUse = (item) => {
-    setUseItem(item);
-    setPartialAmt("");
-    setUseModalOpen(true);
-  };
-
-  const closeUseModal = () => {
-    setUseItem(null);
-    setUseModalOpen(false);
-  };
-
-  const openUseModal = openUse;
-  const openEditModal = (item) => {
-    setEditItem(item);
-    setForm({
-      name: item.name || '',
-      category: item.category || 'grocery',
-      dosage: item.dosage || '',
-      expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString().split('T')[0] : '',
-      barcode: item.barcode || '',
-      estimatedCost: item.estimatedCost || '',
-      brand: item.brand || '',
-      quantity: item.quantity || '',
-      unit: item.unit || 'pcs',
-      location: item.location || 'pantry',
-      notes: item.notes || '',
-      purchaseDate: item.purchaseDate ? new Date(item.purchaseDate).toISOString().split('T')[0] : '',
-      calories: item.calories || '',
-      protein: item.protein || '',
-      carbs: item.carbs || '',
-      fat: item.fat || '',
-      fiber: item.fiber || '',
-    });
-    setFormTab('manual');
-    setScanPreview(null);
-    setModalOpen(true);
-  };
-
   const handleCompletelyUsed = async () => {
     setUseLoading(true);
     try {
-      await updateItem(useItem.id || useItem._id, { status: "consumed" });
-      closeUseModal();
+      await updateItem(detailItem.id || detailItem._id, { status: "consumed" });
+      setDetailItem(null);
       refreshInventory();
-      showToast(`${useItem.name} was used completely`, "success");
+      showToast(`${detailItem.name} was used completely`, "success");
     } catch (err) {
       console.error(err);
       showToast("Failed to update status", "error");
@@ -242,10 +197,10 @@ export default function Inventory() {
     e.preventDefault();
     setUseLoading(true);
     try {
-      await updateItem(useItem.id || useItem._id, { quantity: Number(partialAmt) });
-      closeUseModal();
+      await updateItem(detailItem.id || detailItem._id, { quantity: Number(partialAmt) });
+      setDetailItem(null);
       refreshInventory();
-      showToast(`${useItem.name} quantity updated to ${partialAmt}`, "success");
+      showToast(`${detailItem.name} quantity updated to ${partialAmt}`, "success");
     } catch (err) {
       console.error(err);
       showToast("Failed to update quantity", "error");
@@ -424,7 +379,7 @@ export default function Inventory() {
           <div>
             <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Active Items</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence>{activeFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
+            <AnimatePresence>{activeFiltered.map((item, i) => <ItemCard key={item.id} item={item} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
               {!activeFiltered.length && <div className="col-span-full text-center py-10 text-zinc-400">No active items found.</div>}
             </div>
           </div>
@@ -434,7 +389,7 @@ export default function Inventory() {
             <div className="pt-6 border-t border-black/5 dark:border-white/5">
               <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Consumed Items</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <AnimatePresence>{consumedFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
+                <AnimatePresence>{consumedFiltered.map((item, i) => <ItemCard key={item.id} item={item} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
               </div>
             </div>
           )}
@@ -444,7 +399,7 @@ export default function Inventory() {
             <div className="pt-6 border-t border-black/5 dark:border-white/5">
               <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Discarded / Expired</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <AnimatePresence>{expiredFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUseModal} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
+                <AnimatePresence>{expiredFiltered.map((item, i) => <ItemCard key={item.id} item={item} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
               </div>
             </div>
           )}
@@ -666,34 +621,6 @@ export default function Inventory() {
         </AnimatePresence>
       </Modal>
       
-      {/* ── USE ITEM MODAL ── */}
-      <Modal open={useModalOpen} onClose={closeUseModal} title="Update Usage" size="md">
-        <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">{useItem?.name}</h3>
-            {useItem?.quantity && <p className="text-sm text-zinc-500 mt-1">Current Quantity: {useItem.quantity} {useItem.unit}</p>}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button onClick={handleCompletelyUsed} loading={useLoading} className="w-full h-14 bg-red-500 hover:bg-red-600 text-white border-0">
-              Completely Used
-            </Button>
-            <form onSubmit={handlePartiallyUsed} className="flex flex-col gap-2">
-              <Input
-                placeholder="Amt used..."
-                type="number"
-                value={partialAmt}
-                onChange={e => setPartialAmt(e.target.value)}
-                required
-                className="h-10"
-              />
-              <Button type="submit" loading={useLoading} variant="ghost" className="w-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                Mark Partially Used
-              </Button>
-            </form>
-          </div>
-        </div>
-      </Modal>
 
       {/* Detail Item Modal */}
       <Modal open={!!detailItem} onClose={() => setDetailItem(null)} title={
@@ -760,17 +687,36 @@ export default function Inventory() {
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-              <button 
-                onClick={() => {
-                  const itemToEdit = detailItem;
-                  setDetailItem(null);
-                  openEditModal(itemToEdit);
-                }} 
-                className="px-5 py-2.5 rounded-xl font-medium transition-colors hover:bg-orange-500/10 text-orange-500"
-              >
-                Edit Item
-              </button>
+            {detailItem.status === "active" && (
+              <div className="glass rounded-2xl p-6 mt-4">
+                <h4 className="font-semibold mb-4 text-lg">Update Usage</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Button onClick={handleCompletelyUsed} loading={useLoading} className="w-full h-12 bg-red-500 hover:bg-red-600 text-white border-0 font-semibold">
+                    Mark as Consumed
+                  </Button>
+                  <form onSubmit={handlePartiallyUsed} className="flex flex-col gap-2">
+                    <div className="relative">
+                      <Input
+                        placeholder="Amt used..."
+                        type="number"
+                        value={partialAmt}
+                        onChange={e => setPartialAmt(e.target.value)}
+                        required
+                        className="h-10 pr-12"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm font-medium">
+                        {detailItem.unit}
+                      </span>
+                    </div>
+                    <Button type="submit" loading={useLoading} variant="ghost" className="w-full h-10 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
+                      Partially Used
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700 mt-2">
               <button 
                 onClick={() => setDetailItem(null)} 
                 className="px-5 py-2.5 rounded-xl font-medium transition-colors bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700"
