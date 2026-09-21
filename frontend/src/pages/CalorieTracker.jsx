@@ -32,10 +32,22 @@ export default function CalorieTracker() {
     consumed: { calories: 0, protein: 0, carbs: 0, fat: 0 }, 
     logs: [] 
   });
-  const [loading, setLoading] = useState(true);
+  const [todayLogs, setTodayLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(true);
+
   const [showLogModal, setShowLogModal] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
   const [newLog, setNewLog] = useState({ itemName: '', quantity: '100', calories: '', protein: '', carbs: '', fat: '', mealType: 'snack' });
+
+  // Lock body scroll when modals are open
+  useEffect(() => {
+    if (showLogModal || showScanModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [showLogModal, showScanModal]);
   
   const getLocalYYYYMMDD = (d = new Date()) => {
     const offset = d.getTimezoneOffset();
@@ -582,8 +594,8 @@ export default function CalorieTracker() {
       {/* Log Modal */}
       <AnimatePresence>
         {showLogModal && (
-          <div className="fixed inset-0 z-40 flex items-start justify-center p-4 pb-6 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={() => setShowLogModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-md backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10" style={{ marginTop: '110px', maxHeight: 'calc(100dvh - 140px)' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="fixed inset-0 z-40 flex items-start justify-center p-4 pb-6 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" onClick={() => setShowLogModal(false)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-lg rounded-2xl z-10 bg-white/70 dark:bg-[#1A1210]/70 backdrop-blur-3xl border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10" style={{ marginTop: '120px', maxHeight: 'calc(100dvh - 140px)' }}>
               <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
                 <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
                   Log a Meal
@@ -616,10 +628,10 @@ export default function CalorieTracker() {
                   <div className="flex flex-col gap-1.5">
                     <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
                     <select value={newLog.mealType} onChange={e => setNewLog({...newLog, mealType: e.target.value})} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? "#FDF6F0" : "#1A1210" }}>
-                      <option value="breakfast" className="bg-white dark:bg-zinc-800">Breakfast</option>
-                      <option value="lunch" className="bg-white dark:bg-zinc-800">Lunch</option>
-                      <option value="dinner" className="bg-white dark:bg-zinc-800">Dinner</option>
-                      <option value="snack" className="bg-white dark:bg-zinc-800">Snack</option>
+                      <option value="breakfast" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Breakfast</option>
+                      <option value="lunch" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Lunch</option>
+                      <option value="dinner" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Dinner</option>
+                      <option value="snack" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Snack</option>
                     </select>
                   </div>
                 </div>
@@ -639,14 +651,14 @@ export default function CalorieTracker() {
               </form>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* Scan Options Modal */}
       <AnimatePresence>
         {showScanModal && (
-          <div className="fixed inset-0 z-40 flex items-start justify-center p-4 pb-6 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={() => setShowScanModal(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="fixed inset-0 z-40 flex items-start justify-center p-4 pb-6 bg-white/5 dark:bg-black/20 backdrop-blur-2xl" onClick={() => setShowScanModal(false)}>
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="relative flex flex-col w-full max-w-sm backdrop-blur-3xl bg-white/70 dark:bg-[#1A1210]/70 border border-white/60 dark:border-white/20 shadow-2xl ring-1 ring-white/40 dark:ring-white/10 rounded-3xl z-10" style={{ marginTop: '110px' }}>
               <div className="flex-none flex items-center justify-between p-6 pb-4 border-b border-black/5 dark:border-white/5">
                 <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
@@ -677,7 +689,7 @@ export default function CalorieTracker() {
                 </button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

@@ -344,7 +344,7 @@ export default function Inventory() {
     <div className="space-y-5">
       <AnimatePresence><Toast msg={toast.msg} type={toast.type} /></AnimatePresence>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div><h1 className="text-2xl font-bold">Inventory</h1><p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">{items.length} items tracked</p></div>
+        <div><h1 className="text-2xl font-bold">SmartShelf</h1><p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">{items.length} items tracked</p></div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="ghost" onClick={() => navigate("/kitchen")} className="gap-2 text-[#FF6B4A] hover:bg-orange-500/10">
             <ChefHat className="w-4 h-4" /> Don't know what to cook? Click here
@@ -374,7 +374,7 @@ export default function Inventory() {
         <div className="space-y-8">
           {/* Active Items */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Active Inventory</h2>
+            <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Active Items</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <AnimatePresence>{activeFiltered.map((item, i) => <ItemCard key={item.id} item={item} onUse={openUse} delay={i * 0.04} />)}</AnimatePresence>
               {!activeFiltered.length && <div className="col-span-full text-center py-10 text-zinc-400">No active items found.</div>}
@@ -484,7 +484,7 @@ export default function Inventory() {
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Category</label>
                   <select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} className="glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/40 bg-transparent">
-                    {CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                    {CATS.map(c => <option key={c} value={c} className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{c}</option>)}
                   </select>
                 </div>
               </div>

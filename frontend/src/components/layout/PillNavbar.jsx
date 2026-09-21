@@ -81,7 +81,7 @@ export default function PillNavbar() {
           }}
         >
           {/* Logo Badge */}
-          <Link to="/dashboard" className="flex items-center gap-3 outline-none group">
+          <Link to="/" className="flex items-center gap-3 outline-none group">
             <motion.img
               src="/custom-logo.png"
               alt="Logo"

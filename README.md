@@ -14,10 +14,11 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
   
 * 🛒 **SmartShelf (Inventory Management)**
   * Track your kitchen inventory in real-time.
+  * Add items using the AI scanner or the integrated USDA food database.
   * Get alerts for items expiring soon to reduce food waste.
   * View money saved from consumed vs. wasted items.
 
-* 🧑‍🍳 **AI Recipe Generator**
+* 🧑‍🍳 **AI Recipe Generator (Kitchen)**
   * Generate personalized, delicious recipes using strictly the ingredients currently available in your SmartShelf inventory.
   * Customize by dietary preferences (Vegan, Keto, High-Protein, etc.).
 
@@ -26,6 +27,10 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
 
 * 💬 **NutriVision AI ChatBot**
   * A dedicated AI assistant to answer personalized nutrition questions, provide dietary advice, and help you meet your health goals.
+
+* 🏃‍♂️ **Activity & Workout Tracker**
+  * Log exercises, workouts, and daily steps to balance your calorie intake.
+  * View comprehensive insights into your fitness trends.
 
 * 📱 **Responsive & Aesthetic UI**
   * Built with a modern, glassmorphism UI using Tailwind CSS and Framer Motion for buttery-smooth page transitions.
@@ -37,11 +42,11 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
 
 | Category         | Technologies Used                               |
 | ---------------- | ----------------------------------------------- |
-| **Frontend**     | React, Vite, Tailwind CSS, Framer Motion, Recharts, Lucide React |
-| **Backend**      | Node.js, Express.js, Sequelize ORM (PostgreSQL/SQLite) |
+| **Frontend**     | React, Vite, Tailwind CSS, Framer Motion, Recharts, Lucide React, React Router |
+| **Backend**      | Node.js, Express.js, Sequelize ORM (SQLite / PostgreSQL) |
 | **Authentication**| JWT (JSON Web Tokens), bcryptjs |
-| **AI Integration**| Google Gemini AI API (`gemini-3.5-flash-lite`) |
-| **Other Tools**  | Multer (image uploads), node-cron (scheduled tasks), web-push (notifications) |
+| **AI Integration**| Google Gemini AI API (`gemini-3.5-flash-lite`) using the official `@google/genai` SDK |
+| **Other Tools**  | Multer (image uploads), Markdown parsing (react-markdown) |
 
 ---
 
@@ -51,20 +56,20 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
 NutriVisionAi/
 ├── backend/
 │   ├── src/
-│   │   ├── controllers/   # Route handlers
-│   │   ├── models/        # Sequelize DB models
+│   │   ├── controllers/   # Route handlers for auth, inventory, tracker, ai, etc.
+│   │   ├── models/        # Sequelize DB models (User, InventoryItem, CalorieLog, Activity)
 │   │   ├── routes/        # Express API routes
-│   │   ├── utils/         # Helper functions (e.g. AI parsing)
+│   │   ├── utils/         # Helper functions
 │   │   └── server.js      # Main Express application entry point
-│   ├── uploads/           # Image storage
+│   ├── uploads/           # Image storage for scanners
 │   └── package.json
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/    # Reusable UI components (Navbar, Modals, AppShell)
-│   │   ├── pages/         # Main screens (Dashboard, SmartShelf, Tracker, Recipes, ChatBot)
-│   │   ├── context/       # React Context API providers
-│   │   ├── utils/         # Helper functions and API wrappers
+│   │   ├── components/    # Reusable UI components (Navbar, Modals, AppShell, GlassCard)
+│   │   ├── pages/         # Main screens (Dashboard, SmartShelf, Tracker, Kitchen, ChatBot, Activity)
+│   │   ├── context/       # React Context API providers (Auth, Theme, Inventory, Kitchen)
+│   │   ├── api/           # Axios interceptors and API wrappers
 │   │   ├── App.jsx        # Routing and Layout transitions
 │   │   └── main.jsx
 │   ├── public/            # Static assets and backgrounds

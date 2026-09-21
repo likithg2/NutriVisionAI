@@ -49,9 +49,9 @@ function Select({ label, options, ...props }) {
           border: dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
         }}
       >
-        <option value="" disabled>Select {label}</option>
+        <option value="" disabled style={{ background: dark ? '#1A1210' : '#FFF', color: dark ? '#FDF6F0' : '#1A1210' }}>Select {label}</option>
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value} style={{ background: dark ? '#1A1210' : '#FFF' }}>{opt.label}</option>
+          <option key={opt.value} value={opt.value} style={{ background: dark ? '#1A1210' : '#FFF', color: dark ? '#FDF6F0' : '#1A1210' }}>{opt.label}</option>
         ))}
       </select>
     </div>

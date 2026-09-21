@@ -471,7 +471,7 @@ export default function Dashboard() {
       {/* ── Inventory Grid ── */}
       <GlassCard delay={0.35} hover={false}>
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-semibold">Recent Inventory</p>
+          <p className="text-sm font-semibold">Recent SmartShelf Items</p>
           <span className="text-xs text-zinc-400">{computed.activeItems.length} total active items</span>
         </div>
         <InventoryGrid items={computed.activeItems} />

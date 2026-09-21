@@ -36,8 +36,8 @@ function Field({ icon: Icon, label, value, onChange, type = "text", placeholder,
             onFocus={e => { e.target.style.border = "1px solid rgba(255,107,74,0.6)"; e.target.style.boxShadow = "0 0 0 4px rgba(255,107,74,0.1)"; }}
             onBlur={e => { e.target.style.border = error ? "1px solid rgba(229,83,61,0.5)" : dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)"; e.target.style.boxShadow = "none"; }}
           >
-            <option value="" disabled>{placeholder}</option>
-            {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <option value="" disabled style={{ background: dark ? '#1A1210' : '#FFF', color: dark ? '#FDF6F0' : '#1A1210' }}>{placeholder}</option>
+            {options.map(o => <option key={o.value} value={o.value} style={{ background: dark ? '#1A1210' : '#FFF', color: dark ? '#FDF6F0' : '#1A1210' }}>{o.label}</option>)}
           </select>
         ) : (
           <input type={isPwd && showPwd ? "text" : type} placeholder={placeholder} value={value} onChange={onChange} required={required} autoComplete={autoComplete}
