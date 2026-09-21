@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Activity from '../models/Activity.js';
 import { makeActivityPayload } from '../utils/activityHelper.js';
 import { notifyUser } from '../utils/notify.js';
+import { Op } from 'sequelize';
 
 export function calculateGoals(user) {
   // Default fallback if physical metrics are missing
@@ -68,6 +69,25 @@ export const getDailyStats = async (req, res) => {
     });
 
     res.json({ goals, consumed, logs });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getHistory = async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+    const past = new Date();
+    past.setDate(past.getDate() - (days - 1));
+    const startDate = past.toISOString().split('T')[0];
+    
+    const logs = await MealLog.findAll({
+      where: { 
+        userId: req.user.id,
+        date: { [Op.gte]: startDate }
+      }
+    });
+    res.json({ logs });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

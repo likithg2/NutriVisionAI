@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getItems } from "../api/items.js";
 import { getActivity } from "../api/activity.js";
 import { getDashboardSuggestions } from "../api/chat.js";
+import api from "../api/axios.js";
 import GlassCard from "../components/ui/GlassCard.jsx";
 import { SkeletonCard } from "../components/ui/Skeleton.jsx";
 import AnimatedCounter from "../components/ui/AnimatedCounter.jsx";
@@ -321,16 +322,19 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [historyLogs, setHistoryLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       getItems({ limit: 100, sort: "expiryDate", order: "asc" }),
       getActivity({ limit: 200 }),
+      api.get('/api/calories/history?days=7')
     ])
-      .then(([itemsRes, actRes]) => {
+      .then(([itemsRes, actRes, histRes]) => {
         setItems(itemsRes.data?.items || itemsRes.data || []);
         setActivities(actRes.data || []);
+        setHistoryLogs(histRes.data?.logs || []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -360,21 +364,26 @@ export default function Dashboard() {
       })
       .reduce((s, i) => s + (Number(i.estimatedCost) || 0), 0);
 
-    /* calorie trend: aggregate items by creation day over last 7 days */
+    /* calorie trend: aggregate logs by consumption day over last 7 days */
     const trend = Array.from({ length: 7 }, (_, idx) => {
       const d = new Date(now); d.setDate(d.getDate() - (6 - idx));
       const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1);
-      const cals = items
-        .filter(i => { const c = new Date(i.createdAt); return c >= dayStart && c < dayEnd; })
-        .reduce((s, i) => s + (Number(i.calories) || 0), 0);
+      const cals = historyLogs
+        .filter(l => { const c = new Date(l.date); return c >= dayStart && c < dayEnd; })
+        .reduce((s, l) => s + ((Number(l.calories) || 0) * (Number(l.servings) || 1)), 0);
       return { day: WEEKDAYS[d.getDay()], calories: Math.round(cals) };
     });
 
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart); todayEnd.setDate(todayEnd.getDate() + 1);
+    const todayLogs = historyLogs.filter(l => { const c = new Date(l.date); return c >= todayStart && c < todayEnd; });
+    const todayCalories = todayLogs.reduce((s, l) => s + ((Number(l.calories) || 0) * (Number(l.servings) || 1)), 0);
+
     const streak = streakDays(activities);
 
-    return { activeItems, nonExpiredItems, expiringItems, totalCalories, totalProtein, totalCarbs, totalFat, trend, streak, moneySaved };
-  }, [items, activities]);
+    return { activeItems, nonExpiredItems, expiringItems, todayCalories, todayLogsCount: todayLogs.length, totalProtein, totalCarbs, totalFat, trend, streak, moneySaved };
+  }, [items, activities, historyLogs]);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -400,7 +409,7 @@ export default function Dashboard() {
 
   /* ── KPI definitions ── */
   const kpis = [
-    { icon: Flame, label: "Total Calories", value: computed.totalCalories, suffix: " kcal", color: "bg-orange-100 dark:bg-orange-900/40 text-orange-500", subtext: `${items.length} items tracked` },
+    { icon: Flame, label: "Today's Calories", value: computed.todayCalories, suffix: " kcal", color: "bg-orange-100 dark:bg-orange-900/40 text-orange-500", subtext: `${computed.todayLogsCount} meals logged today` },
     { icon: Package, label: "Items in Stock", value: computed.activeItems.length, suffix: "", color: "bg-blue-100 dark:bg-blue-900/40 text-blue-500", subtext: `of ${items.length} total items` },
     { icon: AlertTriangle, label: "Expiring Soon", value: computed.expiringItems.length, suffix: " items", color: "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-500", subtext: "within 7 days" },
     { icon: Zap, label: "Money Saved", value: computed.moneySaved, prefix: "₹", color: "bg-mint-100 dark:bg-mint-900/40 text-mint-600", subtext: "from consumed items" },
