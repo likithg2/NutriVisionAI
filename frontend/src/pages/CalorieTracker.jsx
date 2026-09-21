@@ -8,6 +8,7 @@ import api from '../api/axios.js';
 import { estimateFood } from '../api/scanner.js';
 import MacroChart from '../components/charts/MacroChart.jsx';
 import Input from '../components/ui/Input.jsx';
+import Modal from '../components/ui/Modal.jsx';
 import Markdown from 'react-markdown';
 
 const INSPIRING_FACTS = [
