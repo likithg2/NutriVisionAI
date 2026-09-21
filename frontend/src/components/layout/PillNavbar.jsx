@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Leaf, Menu, X, Sun, Moon, Bell, Search, LogOut, Check, Languages } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Modal from "../ui/Modal.jsx";
 import { getNotifications, getUnreadCount, markMany } from "../../api/notifications.js";
@@ -20,19 +19,13 @@ export default function PillNavbar() {
   const navigate = useNavigate();
   const { dark, toggle } = useTheme();
   const { user } = useAuth();
-  const { t, i18n } = useTranslation();
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'kn' ? 'en' : 'kn';
-    i18n.changeLanguage(newLang);
-  };
 
   const navLinks = [
-    { path: "/dashboard", label: t("nav.dashboard") },
-    { path: "/inventory", label: t("nav.smartShelf") },
-    { path: "/kitchen", label: t("nav.kitchen") },
-    { path: "/calories", label: t("nav.tracker") },
-    { path: "/activity", label: t("nav.activity") },
+    { path: "/dashboard", label: "Dashboard" },
+    { path: "/inventory", label: "SmartShelf" },
+    { path: "/kitchen", label: "Kitchen" },
+    { path: "/calories", label: "Tracker" },
+    { path: "/activity", label: "Activity" },
   ];
   
   const initials = user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2) : "?";
@@ -167,17 +160,6 @@ export default function PillNavbar() {
 
             {/* Google Translate Widget Container */}
             <div id="google_translate_element" className="hidden sm:block [&>div]:!h-9 [&>div>div]:!h-9 [&_.goog-te-combo]:!h-9 [&_.goog-te-combo]:!rounded-xl [&_.goog-te-combo]:!text-sm [&_.goog-te-combo]:!border-none [&_.goog-te-combo]:!bg-zinc-100 dark:[&_.goog-te-combo]:!bg-zinc-800 dark:[&_.goog-te-combo]:!text-zinc-200" />
-
-            {/* Language Toggle */}
-            <motion.button
-              whileTap={{ scale: 0.92 }}
-              onClick={toggleLanguage}
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors outline-none hover:text-[#FF6B4A]"
-              style={{ color: dark ? "#C9B8AE" : "#6B6560", background: dark ? "rgba(255,255,255,0.05)" : "#F3EEE8" }}
-              title="Toggle Language (English/Kannada)"
-            >
-              <Languages className="w-4 h-4" />
-            </motion.button>
 
             {/* Theme Toggle */}
             <motion.button

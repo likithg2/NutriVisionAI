@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useTranslation } from 'react-i18next';
 import GlassCard from '../components/ui/GlassCard.jsx';
 import { Flame, Plus, Sparkles, ChefHat, Target, Camera, Loader2, AlertTriangle, Search as SearchIcon, Activity, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
 import api from '../api/axios.js';
@@ -29,7 +28,6 @@ const INSPIRING_FACTS = [
 export default function CalorieTracker() {
   const { dark } = useTheme();
   const { user } = useAuth();
-  const { t } = useTranslation();
   
   const [data, setData] = useState({ 
     goals: { calories: 2000, protein: 150, carbs: 200, fat: 65 }, 
@@ -98,26 +96,7 @@ export default function CalorieTracker() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleAnalyse = async () => {
-    if (!newLog.itemName || newLog.itemName.length < 2) return;
-    setAiEstimateLoading(true);
-    try {
-      const { data } = await estimateFood(newLog.itemName, newLog.quantity);
-      if (data) {
-        setNewLog(prev => ({
-          ...prev,
-          calories: data.calories || 0,
-          protein: data.protein || 0,
-          carbs: data.carbs || 0,
-          fat: data.fat || 0,
-        }));
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setAiEstimateLoading(false);
-    }
-  };
+
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -171,14 +150,35 @@ export default function CalorieTracker() {
 
   const handleLogMeal = async (e) => {
     e.preventDefault();
+    setAiEstimateLoading(true);
     try {
-      await api.post('/api/calories', { ...newLog, date: currentDate });
+      let logData = { ...newLog };
+      if (!logData.calories) {
+        try {
+          const { data } = await estimateFood(logData.itemName, logData.quantity);
+          if (data) {
+            logData = {
+              ...logData,
+              calories: data.calories || 0,
+              protein: data.protein || 0,
+              carbs: data.carbs || 0,
+              fat: data.fat || 0,
+            };
+          }
+        } catch (err) {
+          console.error("Auto-analyse failed:", err);
+        }
+      }
+      
+      await api.post('/api/calories', { ...logData, date: currentDate });
       setShowLogModal(false);
       setNewLog({ itemName: '', quantity: '100', calories: '', protein: '', carbs: '', fat: '', mealType: 'snack' });
       localStorage.removeItem(`ai_advice_${currentDate}`);
       fetchStats();
     } catch (err) {
       console.error(err);
+    } finally {
+      setAiEstimateLoading(false);
     }
   };
 
@@ -290,9 +290,9 @@ export default function CalorieTracker() {
   const calsPercent = Math.min((consumed.calories / goals.calories) * 100, 100) || 0;
   
   const macros = [
-    { label: t("tracker.protein"), value: consumed.protein, goal: goals.protein, color: '#3b82f6' },
-    { label: t("tracker.carbs"), value: consumed.carbs, goal: goals.carbs, color: '#eab308' },
-    { label: t("tracker.fat"), value: consumed.fat, goal: goals.fat, color: '#ec4899' },
+    { label: "Protein", value: consumed.protein, goal: goals.protein, color: '#3b82f6' },
+    { label: "Carbs", value: consumed.carbs, goal: goals.carbs, color: '#eab308' },
+    { label: "Fat", value: consumed.fat, goal: goals.fat, color: '#ec4899' },
   ];
 
   const overLimitMacros = [];
@@ -321,8 +321,8 @@ export default function CalorieTracker() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{t("tracker.title")}</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 mt-1">{t("tracker.subtitle")}</p>
+          <h1 className="text-3xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>Calorie Tracker</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 mt-1">Log your meals and hit your goals</p>
           
           <div className="flex items-center gap-4 mt-3">
             <div className="flex items-center glass rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-1">
@@ -343,17 +343,17 @@ export default function CalorieTracker() {
             </div>
             {currentDate !== getLocalYYYYMMDD() && (
               <button onClick={() => setCurrentDate(getLocalYYYYMMDD())} className="text-xs font-medium text-[#FF6B4A] hover:underline">
-                {t("tracker.backToToday") || "Back to Today"}
+                Back to Today
               </button>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <button onClick={() => setShowScanModal(true)} disabled={scanning} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-white rounded-xl font-medium transition-colors shadow-lg" style={{ background: dark ? "rgba(255,255,255,0.1)" : "#1A1210" }}>
-            {scanning ? <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> : <Camera className="w-4 h-4" />} {t("tracker.scan") || "Scan"}
+            {scanning ? <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> : <Camera className="w-4 h-4" />} Scan Meal
           </button>
           <button onClick={() => setShowLogModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#FF6B4A] text-white rounded-xl font-medium hover:bg-[#E85A3A] transition-colors shadow-lg">
-            <Plus className="w-4 h-4" /> {t("tracker.log") || "Log"}
+            <Plus className="w-4 h-4" /> Log Meal
           </button>
           <input type="file" ref={fileInputRef} onChange={(e) => { setShowScanModal(false); handleScan(e); }} accept="image/*" className="hidden" />
           <input type="file" ref={cameraInputRef} onChange={(e) => { setShowScanModal(false); handleScan(e); }} accept="image/*" capture="environment" className="hidden" />
@@ -365,7 +365,7 @@ export default function CalorieTracker() {
         
         {/* Calories Circle */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="col-span-1 glass p-6 rounded-3xl flex flex-col items-center justify-center relative">
-          <h2 className="text-lg font-semibold mb-6 w-full text-center" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>{t("tracker.dailyCalories") || "Daily Calories"}</h2>
+          <h2 className="text-lg font-semibold mb-6 w-full text-center" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Daily Calories</h2>
           
           <div className="relative w-48 h-48">
             <svg className="w-full h-full transform -rotate-90">
@@ -384,19 +384,19 @@ export default function CalorieTracker() {
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <Flame className="w-6 h-6 text-[#FF6B4A] mb-1" />
               <span className="text-3xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.max(goals.calories - consumed.calories, 0)}</span>
-              <span className="text-xs" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>{t("tracker.remaining") || "Remaining"}</span>
+              <span className="text-xs" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Remaining</span>
             </div>
           </div>
           
           <div className="flex justify-between w-full mt-6 px-4 text-sm font-medium" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>
-            <span>{consumed.calories} {t("tracker.consumed") || "Consumed"}</span>
-            <span>{goals.calories} {t("tracker.goal") || "Goal"}</span>
+            <span>{consumed.calories} Consumed</span>
+            <span>{goals.calories} Goal</span>
           </div>
         </motion.div>
 
         {/* Macros */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="col-span-1 glass p-6 rounded-3xl flex flex-col items-center justify-center relative">
-          <h2 className="text-lg font-semibold mb-2 w-full text-center" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>{t("tracker.macroSplit") || "Macro Split"}</h2>
+          <h2 className="text-lg font-semibold mb-2 w-full text-center" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Macro Split</h2>
           <MacroChart protein={consumed.protein} carbs={consumed.carbs} fat={consumed.fat} dark={dark} />
         </motion.div>
         
@@ -433,7 +433,7 @@ export default function CalorieTracker() {
             <div className="flex justify-between items-start mb-4 relative z-10">
               <div className="flex items-center gap-2">
                 <ChefHat className="w-5 h-5 text-[#FF6B4A]" />
-                <h3 className="font-semibold text-lg" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{t("tracker.smartMealSuggestion") || "Smart Meal Suggestion"}</h3>
+                <h3 className="font-semibold text-lg" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>Smart Meal Suggestion</h3>
               </div>
               <button 
                 onClick={getAiSuggestion}
@@ -442,7 +442,7 @@ export default function CalorieTracker() {
                 style={{ background: dark ? 'rgba(255,107,74,0.15)' : 'rgba(255,107,74,0.1)', color: '#FF6B4A' }}
               >
                 {suggesting ? <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                {suggesting ? (t("tracker.thinking") || 'Thinking...') : (t("tracker.inspireMe") || 'Inspire Me')}
+                {suggesting ? 'Thinking...' : 'Inspire Me'}
               </button>
             </div>
             
@@ -481,9 +481,9 @@ export default function CalorieTracker() {
                 <AlertTriangle className="w-5 h-5 text-red-500" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-red-500 mb-1">{t("tracker.dailyLimitExceeded") || "Daily Limit Exceeded!"}</h3>
+                <h3 className="font-semibold text-sm text-red-500 mb-1">Daily Limit Exceeded!</h3>
                 <p className="text-sm leading-relaxed" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>
-                  {t("tracker.limitExceededDesc") || "You've gone over your daily goal for:"} <strong>{overLimitMacros.join(', ')}</strong>. {t("tracker.limitExceededAdvice") || "Consider lighter meals for the rest of the day to stay on track."}
+                  You've gone over your daily goal for: <strong>{overLimitMacros.join(', ')}</strong>. Consider lighter meals for the rest of the day to stay on track.
                 </p>
               </div>
             </div>
@@ -495,15 +495,15 @@ export default function CalorieTracker() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="glass p-6 rounded-3xl flex flex-col md:flex-row items-center gap-6 mt-6">
         <div className="flex-1">
           <h3 className="font-semibold text-lg flex items-center gap-2 mb-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
-            <Sparkles className="w-5 h-5 text-[#FF6B4A]" /> {t("tracker.bodyMetrics") || "Body Metrics"}
+            <Sparkles className="w-5 h-5 text-[#FF6B4A]" /> Body Metrics
           </h3>
           {bmi ? (
             <p className="text-sm" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>
-              {t("tracker.bmiText") || "Based on your profile, your BMI is"} <strong>{bmi}</strong>, {t("tracker.bmiWhichIs") || "which is classified as"} <strong style={{ color: bmiColor }}>{bmiCategory}</strong>.
+              Based on your profile, your BMI is <strong>{bmi}</strong>, which is classified as <strong style={{ color: bmiColor }}>{bmiCategory}</strong>.
             </p>
           ) : (
             <p className="text-sm" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>
-              {t("tracker.bmiUpdateText") || "Please update your height and weight in Settings to calculate your BMI and body status."}
+              Please update your height and weight in Settings to calculate your BMI and body status.
             </p>
           )}
         </div>
@@ -531,7 +531,7 @@ export default function CalorieTracker() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 relative z-10">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-[#FF6B4A]" />
-            <h3 className="font-semibold text-lg" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{t("tracker.smartDietAdvice") || "Smart Diet & Exercise Advice"}</h3>
+            <h3 className="font-semibold text-lg" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>Smart Diet & Exercise Advice</h3>
           </div>
           <button 
             onClick={getDietExerciseAdvice}
@@ -540,7 +540,7 @@ export default function CalorieTracker() {
             style={{ background: '#FF6B4A', color: '#FFF' }}
           >
             {gettingAdvice ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-            {gettingAdvice ? (t("tracker.analyzing") || 'Analyzing...') : (t("tracker.refreshAdvice") || 'Refresh Advice')}
+            {gettingAdvice ? 'Analyzing...' : 'Refresh Advice'}
           </button>
         </div>
 
@@ -557,7 +557,7 @@ export default function CalorieTracker() {
             </div>
           ) : (
             <p className="text-sm italic" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>
-              {t("tracker.advicePrompt") || "Click the button above to receive a personalized meal, diet, and exercise plan based on your current macros and inventory."}
+              Click the button above to receive a personalized meal, diet, and exercise plan based on your current macros and inventory.
             </p>
           )}
         </div>
@@ -567,13 +567,13 @@ export default function CalorieTracker() {
       <GlassCard delay={0.2}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-semibold text-lg flex items-center gap-2" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
-            <Target className="w-5 h-5 text-[#FF6B4A]" /> {t("tracker.recentLogs")}
+            <Target className="w-5 h-5 text-[#FF6B4A]" /> Recent Logs
           </h3>
         </div>
         
         {logs.length === 0 ? (
           <div className="text-center py-8" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>
-            <p>{t("tracker.noMealsLogged") || "No meals logged today. Time to eat!"}</p>
+            <p>No meals logged today. Time to eat!</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -581,16 +581,16 @@ export default function CalorieTracker() {
               <div key={log.id || log._id} className="flex justify-between items-center p-4 rounded-2xl" style={{ background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
                 <div>
                   <p className="font-medium" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>{log.itemName}</p>
-                  <p className="text-xs mt-0.5 capitalize" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>{log.mealType} • {log.servings || 1} {t("tracker.servings") || "serving(s)"}</p>
+                  <p className="text-xs mt-0.5 capitalize" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>{log.mealType} • {log.servings || 1} serving(s)</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="font-bold text-[#FF6B4A]">{log.calories * (log.servings || 1)} {t("tracker.cal")}</p>
+                    <p className="font-bold text-[#FF6B4A]">{log.calories * (log.servings || 1)} kcal</p>
                     <p className="text-xs mt-0.5" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>
-                      {t("tracker.protein")}: {(log.protein || 0) * (log.servings || 1)}g • {t("tracker.carbs")}: {(log.carbs || 0) * (log.servings || 1)}g • {t("tracker.fat")}: {(log.fat || 0) * (log.servings || 1)}g
+                      Protein: {(log.protein || 0) * (log.servings || 1)}g • Carbs: {(log.carbs || 0) * (log.servings || 1)}g • Fat: {(log.fat || 0) * (log.servings || 1)}g
                     </p>
                   </div>
-                  <button onClick={() => handleDelete(log.id || log._id)} className="p-2 text-zinc-400 hover:text-red-500 transition-colors" title={t("tracker.deleteLog")}>
+                  <button onClick={() => handleDelete(log.id || log._id)} className="p-2 text-zinc-400 hover:text-red-500 transition-colors" title="Delete Log">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -601,77 +601,65 @@ export default function CalorieTracker() {
       </GlassCard>
 
       {/* Log Modal */}
-      <Modal open={showLogModal} onClose={() => setShowLogModal(false)} title={<div className="flex items-center gap-2">{t("tracker.logNewMeal") || "Log a Meal"} {aiEstimateLoading && <Loader2 className="w-5 h-5 animate-spin text-[#FF6B4A]" />}</div>} size="lg">
+      <Modal open={showLogModal} onClose={() => setShowLogModal(false)} title={<div className="flex items-center gap-2">Log a Meal {aiEstimateLoading && <Loader2 className="w-5 h-5 animate-spin text-[#FF6B4A]" />}</div>} size="lg">
         <form onSubmit={handleLogMeal} className="space-y-4">
-          <Input label={t("tracker.mealName") || "Food Name"} required value={newLog.itemName} onChange={e => setNewLog({...newLog, itemName: e.target.value})} placeholder="e.g. Chicken Salad" />
-        <div className="flex gap-3 items-end">
-          <div className="flex-1">
-            <Input label={t("tracker.quantity") || "Quantity (g/ml)"} required type="number" value={newLog.quantity} onChange={e => setNewLog({...newLog, quantity: e.target.value})} placeholder="100" />
-          </div>
-          <button
-            type="button"
-            onClick={handleAnalyse}
-            disabled={aiEstimateLoading || !newLog.itemName || newLog.itemName.length < 2 || !newLog.quantity}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all disabled:opacity-40 shrink-0 mb-[2px]"
-            style={{ background: 'linear-gradient(135deg, #FF6B4A, #E55540)', color: 'white' }}
-          >
-            {aiEstimateLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SearchIcon className="w-4 h-4" />}
-            {aiEstimateLoading ? (t("tracker.analysing") || 'Analysing...') : (t("tracker.analyse") || 'Analyse')}
-          </button>
+          <Input label="Food Name" required value={newLog.itemName} onChange={e => setNewLog({...newLog, itemName: e.target.value})} placeholder="e.g. Chicken Salad" />
+        <div className="flex-1">
+          <Input label="Quantity (g/ml)" required type="number" value={newLog.quantity} onChange={e => setNewLog({...newLog, quantity: e.target.value})} placeholder="100" />
         </div>
         
         <div className="grid grid-cols-2 gap-4">
-          <Input label={t("tracker.calories") || "Calories"} required type="number" value={newLog.calories} onChange={e => setNewLog({...newLog, calories: e.target.value})} placeholder="kcal" />
+          <Input label="Calories" required type="number" value={newLog.calories} onChange={e => setNewLog({...newLog, calories: e.target.value})} placeholder="kcal" />
           
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{t("tracker.mealType") || "Meal Type"}</label>
+            <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
             <select value={newLog.mealType} onChange={e => setNewLog({...newLog, mealType: e.target.value})} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? "#FDF6F0" : "#1A1210" }}>
-              <option value="breakfast" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{t("tracker.breakfast") || "Breakfast"}</option>
-              <option value="lunch" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{t("tracker.lunch") || "Lunch"}</option>
-              <option value="dinner" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{t("tracker.dinner") || "Dinner"}</option>
-              <option value="snack" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{t("tracker.snack") || "Snack"}</option>
+              <option value="breakfast" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Breakfast</option>
+              <option value="lunch" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Lunch</option>
+              <option value="dinner" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Dinner</option>
+              <option value="snack" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Snack</option>
             </select>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <Input label={`${t("tracker.protein")} (g)`} type="number" value={newLog.protein} onChange={e => setNewLog({...newLog, protein: e.target.value})} />
-          <Input label={`${t("tracker.carbs")} (g)`} type="number" value={newLog.carbs} onChange={e => setNewLog({...newLog, carbs: e.target.value})} />
-          <Input label={`${t("tracker.fat")} (g)`} type="number" value={newLog.fat} onChange={e => setNewLog({...newLog, fat: e.target.value})} />
+          <Input label="Protein (g)" type="number" value={newLog.protein} onChange={e => setNewLog({...newLog, protein: e.target.value})} />
+          <Input label="Carbs (g)" type="number" value={newLog.carbs} onChange={e => setNewLog({...newLog, carbs: e.target.value})} />
+          <Input label="Fat (g)" type="number" value={newLog.fat} onChange={e => setNewLog({...newLog, fat: e.target.value})} />
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <button type="button" onClick={() => setShowLogModal(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>{t("tracker.cancel") || "Cancel"}</button>
+          <button type="button" onClick={() => setShowLogModal(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>Cancel</button>
           <button type="submit" disabled={aiEstimateLoading} className="px-5 py-2.5 rounded-xl font-medium bg-[#FF6B4A] text-white hover:bg-[#E85A3A] transition-colors disabled:opacity-50">
-            {aiEstimateLoading ? (t("tracker.estimating") || 'Estimating...') : (t("tracker.saveLog") || 'Add Meal')}
+            {aiEstimateLoading ? 'Estimating...' : 'Add Meal'}
           </button>
         </div>
       </form>
       </Modal>
 
       {/* Scan Options Modal */}
-      <Modal open={showScanModal} onClose={() => setShowScanModal(false)} title={t("tracker.scanMeal") || "Scan Meal"} size="sm">
+      <Modal open={showScanModal} onClose={() => setShowScanModal(false)} title="Scan Meal" size="sm">
         <div className="flex flex-col gap-3">
           <button 
             onClick={() => fileInputRef.current?.click()} 
             className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl font-medium transition-all"
             style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: dark ? '#FDF6F0' : '#1A1210' }}
           >
-            <SearchIcon className="w-5 h-5 text-[#FF6B4A]" /> {t("tracker.selectPicture") || "Select a Picture"}
+            <SearchIcon className="w-5 h-5 text-[#FF6B4A]" /> Select a Picture
           </button>
           <button 
             onClick={() => cameraInputRef.current?.click()} 
             className="flex items-center justify-center gap-3 px-4 py-4 rounded-xl font-medium transition-all"
             style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: dark ? '#FDF6F0' : '#1A1210' }}
           >
-            <Camera className="w-5 h-5 text-[#FF6B4A]" /> {t("tracker.takePicture") || "Take a Picture"}
+            <Camera className="w-5 h-5 text-[#FF6B4A]" /> Take a Picture
           </button>
           <button 
             onClick={() => setShowScanModal(false)}
             className="mt-2 px-4 py-3 rounded-xl font-medium transition-colors" 
             style={{ color: dark ? '#C9B8AE' : '#6B6560' }}
           >
-            {t("tracker.cancel") || "Cancel"}
+            Cancel
           </button>
         </div>
       </Modal>

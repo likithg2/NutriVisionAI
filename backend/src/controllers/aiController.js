@@ -319,15 +319,16 @@ export async function dashboardSuggestions(req, res, next) {
     const userProfile = user ? `${user.age || '?'} yrs old ${user.gender || 'unknown'}, goal: ${user.goal || 'maintain'}. Target Daily Macros: ${goals.calories} kcal, ${goals.protein}g P, ${goals.carbs}g C, ${goals.fat}g F.` : 'Standard Adult.';
 
     const items = await Item.findAll({ where: { userId: req.user.id, status: 'active' }, raw: true });
+    const foodItems = items.filter(i => i.category !== 'medicine');
     
     // Calculate simple stats to pass to AI
-    const expiringSoon = items.filter(i => {
+    const expiringSoon = foodItems.filter(i => {
       if (!i.expiryDate) return false;
       const diff = new Date(i.expiryDate) - new Date();
       return diff > 0 && diff <= 2 * 86400000;
     });
 
-    const activeItems = items.filter(i => i.status === 'active');
+    const activeItems = foodItems.filter(i => i.status === 'active');
     
     const inventoryText = activeItems.map(i => `- ${i.name} (${i.category || 'unknown'})`).join('\n') || 'Inventory is empty.';
     const expiringText = expiringSoon.map(i => `- ${i.name}`).join('\n') || 'No items expiring soon.';
