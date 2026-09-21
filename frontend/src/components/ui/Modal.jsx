@@ -15,7 +15,7 @@ const sizes = {
   "full": "max-w-[95vw]"
 };
 
-export default function Modal({ open, onClose, title, children, size = 'md', zIndex = 'z-50', placement = 'top' }) {
+export default function Modal({ open, onClose, title, children, size = 'md', zIndex = 'z-50', placement = 'center' }) {
   const { dark } = useTheme();
 
   useEffect(() => {
