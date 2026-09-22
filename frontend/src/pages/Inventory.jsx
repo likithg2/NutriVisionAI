@@ -109,7 +109,7 @@ function ItemCard({ item, onSelect, delay }) {
             {item.calories != null && <span>🔥 {item.calories} kcal</span>}
             {item.protein != null && <span>💪 {item.protein}g</span>}
             {item.quantity && <span>📦 {item.quantity} {item.unit}</span>}
-            {days !== Infinity && <span className={urgColor}>📅 {days <= 0 ? "Expired" : `Expires in ${days}d`}</span>}
+            {days !== Infinity && item.status !== "consumed" && item.status !== "partially_consumed" && <span className={urgColor}>📅 {days <= 0 ? "Expired" : `Expires in ${days}d`}</span>}
           </div>
         </div>
       </div>
