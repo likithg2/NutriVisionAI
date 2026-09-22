@@ -54,7 +54,7 @@
 
 //       // Find active items expiring within 7 days and not notified yet
 //       const expiringItems = await Item.find({
-//         status: { [Op.in]: ['active', 'partially_consumed', 'consumed'] },
+//         status: 'active',
 //         expiryDate: { $gte: now, $lte: in7 },
 //         notified: { $ne: true }
 //       }).lean();
@@ -177,7 +177,7 @@ export function initCronJobs() {
 
         const expiringItems = await Item.findAll({
           where: {
-            status: { [Op.in]: ['active', 'partially_consumed', 'consumed'] },
+            status: 'active',
             expiryDate: { [Op.lte]: in3 },
             [Op.or]: [{ notified: false }, { notified: null }]
           }
@@ -265,4 +265,5 @@ export async function createNotification(userId, title, message, type = 'system'
   if (!user) return false;
   return notifyUser(user, title, message, type, user.notificationPrefs || {});
 }
+
 
