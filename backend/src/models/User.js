@@ -44,10 +44,14 @@ const User = sequelize.define('User', {
   notificationPrefs: {
     type: DataTypes.JSON,
     defaultValue: {
-      emailEnabled: true,
-      pushEnabled: true,
-      reminderDays: 3,
-      digest: 'weekly'
+      emailExpiry: true,
+      pushExpiry: true,
+      emailDigest: false,
+      aiInsights: true,
+      threeDayWarning: true,
+      oneDayWarning: true,
+      dayOfExpiry: true,
+      weeklyReport: false
     }
   },
   avatarUrl: {
