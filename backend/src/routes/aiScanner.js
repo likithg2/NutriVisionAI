@@ -1,14 +1,89 @@
 import express from "express";
 import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import { requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB limit
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 router.use(requireAuth);
+
+async function generateWithFallback(prompt, imageBuffer = null, imageMimeType = null) {
+  const keys = [
+    { type: 'gemini', key: process.env.GEMINI_API_KEY },
+    { type: 'gemini', key: process.env.GEMINI_API_KEY2 },
+    { type: 'nemotron', key: process.env.NEMOTRON_API_KEY },
+    { type: 'openai', key: process.env.OPENAI_API_KEY }
+  ];
+
+  for (const { type, key } of keys) {
+    if (!key) continue;
+
+    try {
+      if (type === 'gemini') {
+        const ai = new GoogleGenAI({ apiKey: key });
+        const contents = imageBuffer 
+          ? [
+              { inlineData: { data: imageBuffer.toString("base64"), mimeType: imageMimeType } },
+              prompt
+            ]
+          : prompt;
+        const response = await ai.models.generateContent({
+          model: "gemini-3.5-flash-lite",
+          contents,
+          config: { responseMimeType: "application/json" }
+        });
+        return response.text || "";
+      } else if (type === 'nemotron') {
+        const openai = new OpenAI({ apiKey: key, baseURL: "https://integrate.api.nvidia.com/v1" });
+        const messages = [];
+        if (imageBuffer) {
+           messages.push({
+             role: "user",
+             content: [
+               { type: "text", text: prompt },
+               { type: "image_url", image_url: { url: `data:${imageMimeType};base64,${imageBuffer.toString("base64")}` } }
+             ]
+           });
+        } else {
+           messages.push({ role: "user", content: prompt });
+        }
+        const response = await openai.chat.completions.create({
+          model: "nvidia/llama-3.1-nemotron-70b-instruct",
+          messages,
+          response_format: { type: "json_object" }
+        });
+        return response.choices[0].message.content || "";
+      } else if (type === 'openai') {
+        const openai = new OpenAI({ apiKey: key });
+        const messages = [];
+        if (imageBuffer) {
+           messages.push({
+             role: "user",
+             content: [
+               { type: "text", text: prompt },
+               { type: "image_url", image_url: { url: `data:${imageMimeType};base64,${imageBuffer.toString("base64")}` } }
+             ]
+           });
+        } else {
+           messages.push({ role: "user", content: prompt });
+        }
+        const response = await openai.chat.completions.create({
+          model: imageBuffer ? "gpt-4o-mini" : "gpt-3.5-turbo",
+          messages,
+          response_format: { type: "json_object" }
+        });
+        return response.choices[0].message.content || "";
+      }
+    } catch (e) {
+      console.warn(`[AI Fallback] Failed using ${type}:`, e.message);
+      // continue to next key
+    }
+  }
+
+  throw new Error("All AI fallbacks failed");
+}
 
 router.post("/scan", upload.single("image"), async (req, res) => {
   if (!req.file) {
@@ -24,18 +99,8 @@ router.post("/scan", upload.single("image"), async (req, res) => {
     "fat" (number, estimated fat in grams).
     Make reasonable estimates for a standard serving size if unsure.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash-lite",
-      contents: [
-        { inlineData: { data: req.file.buffer.toString("base64"), mimeType: req.file.mimetype } },
-        prompt
-      ],
-      config: {
-        responseMimeType: "application/json",
-      }
-    });
+    const textResult = await generateWithFallback(prompt, req.file.buffer, req.file.mimetype);
 
-    const textResult = response.text || "";
     let data;
     try {
       // Clean up in case the model returns markdown code block
@@ -67,18 +132,27 @@ router.post("/estimate-food", express.json(), async (req, res) => {
       return res.status(500).json({ error: "Nutrition API not configured." });
     }
 
-    const usdaRes = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${usdaKey}&query=${encodeURIComponent(foodName)}&pageSize=1`);
-    if (!usdaRes.ok) {
-      throw new Error(`USDA API Error: ${usdaRes.statusText}`);
+    let usdaData = null;
+    try {
+      const usdaRes = await fetch(
+        `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${usdaKey}&query=${encodeURIComponent(foodName)}&pageSize=1`,
+        { signal: AbortSignal.timeout(5000) } // 5 second timeout
+      );
+      if (usdaRes.ok) {
+        usdaData = await usdaRes.json();
+      } else {
+        console.warn(`USDA API Error: ${usdaRes.statusText}`);
+      }
+    } catch (e) {
+      console.warn("USDA API fetch failed (timeout or network error):", e.message);
     }
 
-    const usdaData = await usdaRes.json();
-    if (!usdaData.foods || usdaData.foods.length === 0) {
+    if (!usdaData || !usdaData.foods || usdaData.foods.length === 0) {
       // AI Fallback
       const prompt = `Estimate the nutritional content for ${quantity || 100}g of "${foodName}". Return ONLY a valid JSON object (no markdown, no extra text) with the keys: "calories", "protein", "carbs", "fat" as numbers.`;
       try {
-        const response = await ai.models.generateContent({ model: "gemini-3.5-flash-lite", contents: prompt });
-        let text = (response.text || "").trim();
+        let text = await generateWithFallback(prompt);
+        text = text.trim();
         if (text.startsWith("```json")) text = text.replace(/```json|```/g, "").trim();
         else if (text.startsWith("```")) text = text.replace(/```/g, "").trim();
         const aiData = JSON.parse(text);
