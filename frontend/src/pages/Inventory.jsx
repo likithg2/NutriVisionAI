@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 /* ─── constants ─── */
-const STATUS_COLOR = { active: "green", expired: "red", consumed: "zinc" };
+const STATUS_COLOR = { active: "green", expired: "red", consumed: "zinc", partially_consumed: "amber" };
 const CATS = ["grocery","dairy","produce","meat","beverage","supplement","snack","medicine","other"];
 const SI_UNITS = ["pcs","g","kg","mg","ml","L","oz","lb","cup","tbsp","tsp","dozen","pack","bottle","can","box","bag","strip","tablet"];
 const emptyForm = { name:"", brand:"", category:"grocery", quantity:"", unit:"pcs", location:"pantry", expiryDate:"", estimatedCost:"", calories:"", protein:"", carbs:"", fat:"", fiber:"", notes:"" };
@@ -91,6 +91,8 @@ function ItemCard({ item, onSelect, delay }) {
   
   let bg = "rgba(34,197,94,0.1)"; // fresh / green
   if (item.status === "consumed") bg = "rgba(56,189,248,0.15)"; // blue
+  else if (item.status === "partially_consumed") bg = "rgba(245,158,11,0.15)"; // amber
+
   else if (days <= 3) bg = "rgba(239,68,68,0.15)"; // red
   else if (days <= 7) bg = "rgba(245,158,11,0.15)"; // yellow 
   
@@ -100,7 +102,7 @@ function ItemCard({ item, onSelect, delay }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-sm truncate">{item.name}</h3>
-            <Badge color={STATUS_COLOR[item.status] || "zinc"}>{item.status}</Badge>
+            <Badge color={STATUS_COLOR[item.status] || "zinc"}>{item.status.replace("_", " ")}</Badge>
           </div>
           {item.brand && <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">{item.brand}</p>}
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -197,7 +199,7 @@ export default function Inventory() {
     e.preventDefault();
     setUseLoading(true);
     try {
-      await updateItem(detailItem.id || detailItem._id, { quantity: Number(partialAmt) });
+      await updateItem(detailItem.id || detailItem._id, { quantity: Number(partialAmt), status: "partially_consumed" });
       setDetailItem(null);
       refreshInventory();
       showToast(`${detailItem.name} quantity updated to ${partialAmt}`, "success");
@@ -332,12 +334,12 @@ export default function Inventory() {
 
   const filtered = items.filter(item => {
     const ms = !search || item.name?.toLowerCase().includes(search.toLowerCase());
-    const mf = filter === "all" || item.status === filter || item.category === filter;
+    const mf = filter === "all" || item.status === filter || item.category === filter || (filter === "consumed" && item.status === "partially_consumed");
     return ms && mf;
   });
 
-  const activeFiltered = filtered.filter(i => i.status !== "expired" && i.status !== "consumed");
-  const consumedFiltered = filtered.filter(i => i.status === "consumed");
+  const activeFiltered = filtered.filter(i => i.status !== "expired" && i.status !== "consumed" && i.status !== "partially_consumed");
+  const consumedFiltered = filtered.filter(i => i.status === "consumed" || i.status === "partially_consumed");
   const expiredFiltered = filtered.filter(i => i.status === "expired");
 
   return (
@@ -387,7 +389,7 @@ export default function Inventory() {
           {/* Consumed Items */}
           {consumedFiltered.length > 0 && (
             <div className="pt-6 border-t border-black/5 dark:border-white/5">
-              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Consumed Items</h2>
+              <h2 className="text-lg font-semibold mb-4 text-zinc-700 dark:text-zinc-200">Consumed & Partially Consumed Items</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <AnimatePresence>{consumedFiltered.map((item, i) => <ItemCard key={item.id} item={item} onSelect={setDetailItem} delay={i * 0.04} />)}</AnimatePresence>
               </div>

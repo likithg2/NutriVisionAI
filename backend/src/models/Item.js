@@ -100,8 +100,8 @@ const Item = sequelize.define('Item', {
   hooks: {
     beforeSave: (item) => {
       if (item.expiryDate && new Date(item.expiryDate) < new Date()) {
-        item.status = item.status === 'consumed' ? 'consumed' : 'expired';
-      } else if (item.status !== 'consumed') {
+        item.status = (item.status === 'consumed' || item.status === 'partially_consumed') ? item.status : 'expired';
+      } else if (item.status !== 'consumed' && item.status !== 'partially_consumed') {
         item.status = 'active';
       }
     }
