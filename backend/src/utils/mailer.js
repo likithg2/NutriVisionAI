@@ -70,7 +70,7 @@ export async function sendEmail(to, subject, text, html = null) {
       console.warn('[MAILER] Activity prepare failed:', e?.message || e);
     }
 
-    console.log(`[MAILER] ✉ Email sent to ${to}: ${subject}`);
+    console.log(`[MAILER] ✉ Email sent to ${String(to).replace(/[\r\n]/g, '')}: ${String(subject).replace(/[\r\n]/g, '')}`);
     return info;
   } catch (err) {
     console.error('[MAILER ERROR] ❌', err?.message || err);

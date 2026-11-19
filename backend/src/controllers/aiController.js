@@ -239,7 +239,7 @@ export async function kitchenRecipe(req, res, next) {
 }
 
 export async function shoppingRecommendations(req, res, next) {
-  console.log('[shoppingRecommendations] hit, user id:', req.user?.id);
+  console.log('[shoppingRecommendations] hit, user id:', String(req.user?.id).replace(/[\r\n]/g, ''));
   try {
     const force = req.query.force === 'true';
     const user = await User.findByPk(req.user.id);

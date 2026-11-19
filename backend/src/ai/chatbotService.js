@@ -200,7 +200,7 @@
 // //   m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b[^0-9]*?(\d+)\s*days?(?:\s*(after|later))?/);
 // //   if (m) {
 // //     // try to capture item before that phrase
-// //     const nameMatch = t.match(/(?:is it safe to(?:\s+(?:eat|consume|use))?|safe to(?:\s+(?:eat|consume|use))?|can i\s+(?:eat|consume|use))\s*([^0-9]*?)\s*\d+\s*days?/i);
+// //     const nameMatch = t.match(/(?:is it safe to|safe to|can i\s+(?:eat|consume|use))\s+(?:eat\s+|consume\s+|use\s+)?([a-z0-9 _'-]{0,60}?)\s*\d+\s*days?/i);
 // //     const name = nameMatch && nameMatch[1] ? nameMatch[1].trim() : null;
 // //     return { intent: 'safety_after_expiry', params: { days: Number(m[3]), name } };
 // //   }
@@ -540,7 +540,7 @@
 
 //   m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b[^0-9]*?(\d+)\s*days?(?:\s*(after|later))?/);
 //   if (m) {
-//     const nameMatch = t.match(/(?:is it safe to(?:\s+(?:eat|consume|use))?|safe to(?:\s+(?:eat|consume|use))?|can i\s+(?:eat|consume|use))\s*([^0-9]*?)\s*\d+\s*days?/i);
+//     const nameMatch = t.match(/(?:is it safe to|safe to|can i\s+(?:eat|consume|use))\s+(?:eat\s+|consume\s+|use\s+)?([a-z0-9 _'-]{0,60}?)\s*\d+\s*days?/i);
 //     const name = nameMatch && nameMatch[1] ? nameMatch[1].trim() : null;
 //     return { intent: 'safety_after_expiry', params: { days: Number(m[3]), name } };
 //   }
@@ -1234,7 +1234,7 @@ function detectIntent(text) {
 
   m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b[^0-9]*?(\d+)\s*days?(?:\s*(after|later))?/);
   if (m) {
-    const nameMatch = t.match(/(?:is it safe to(?:\s+(?:eat|consume|use))?|safe to(?:\s+(?:eat|consume|use))?|can i\s+(?:eat|consume|use))\s*([^0-9]*?)\s*\d+\s*days?/i);
+    const nameMatch = t.match(/(?:is it safe to|safe to|can i\s+(?:eat|consume|use))\s+(?:eat\s+|consume\s+|use\s+)?([a-z0-9 _'-]{0,60}?)\s*\d+\s*days?/i);
     const name = nameMatch && nameMatch[1] ? nameMatch[1].trim() : null;
     return { intent: 'safety_after_expiry', params: { days: Number(m[3]), name } };
   }

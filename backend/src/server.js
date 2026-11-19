@@ -34,6 +34,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
+app.disable('x-powered-by');
 
 /** startup diagnostics */
 console.log('[BOOT] FRONTEND_URL:', process.env.FRONTEND_URL || '(not set)');
@@ -44,7 +45,7 @@ app.use(cookieParser());
 
 /** request logger (light) */
 app.use((req, res, next) => {
-  console.log('[REQUEST]', req.method, req.originalUrl);
+  console.log('[REQUEST]', req.method, req.originalUrl.replace(/[\r\n]/g, ''));
   next();
 });
 

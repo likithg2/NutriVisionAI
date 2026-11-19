@@ -41,7 +41,7 @@ export async function notifyUser(userId, title, message, type = 'push') {
     // Send push
     if (pushEnabled) {
       sendPushToUser(userId, title, message).catch(e => {
-        console.error(`[notifyUser] push error for user ${userId}:`, e?.message || e);
+        console.error(`[notifyUser] push error for user ${String(userId).replace(/[\r\n]/g, '')}:`, e?.message || e);
       });
     }
 

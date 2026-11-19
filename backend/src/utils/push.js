@@ -28,7 +28,7 @@ const subscriptions = new Map();
 export function addSubscription(sub, userId = null) {
   if (!sub || !sub.endpoint) return false;
   subscriptions.set(sub.endpoint, { sub, userId, createdAt: Date.now() });
-  console.log('[push] addSubscription:', userId || 'unknown-user', sub.endpoint);
+  console.log('[push] addSubscription:', String(userId || 'unknown-user').replace(/[\r\n]/g, ''), String(sub.endpoint).replace(/[\r\n]/g, ''));
   return true;
 }
 
@@ -81,7 +81,7 @@ export async function sendPushToUser(userId, title = 'Notification', body = '') 
   const payload = { title, body };
   const subs = listSubscriptionsForUser(userId);
   if (!subs.length) {
-    console.log('[push] no subscriptions for user', userId);
+    console.log('[push] no subscriptions for user', String(userId).replace(/[\r\n]/g, ''));
     return;
   }
   await Promise.all(subs.map(s => safeSendNotification(s, payload).catch(() => {})));
