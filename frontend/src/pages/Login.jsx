@@ -19,7 +19,7 @@ function Field({ icon: Icon, label, value, onChange, type = "text", placeholder,
         {label}
       </label>
       <div className="relative group">
-        {Icon && <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors" style={{ color: dark ? "#000000" : "#000000" }} />}
+        {Icon && <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors" style={{ color: dark ? "#8A7A6E" : "#000000" }} />}
         
         {type === "select" ? (
           <select 
@@ -54,7 +54,7 @@ function Field({ icon: Icon, label, value, onChange, type = "text", placeholder,
         )}
         
         {isPwd && (
-          <button type="button" onClick={() => setShowPwd(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: dark ? "#000000" : "#000000" }}>
+          <button type="button" onClick={() => setShowPwd(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: dark ? "#8A7A6E" : "#000000" }}>
             {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         )}
@@ -86,7 +86,7 @@ function StatCard({ icon: Icon, value, label, delay = 0 }) {
         <div className="text-[11px] font-medium tracking-wide uppercase mt-0.5" style={{ color: dark ? "#8A7A6E" : "#000000" }}>{label}</div>
       </div>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: dark ? "rgba(255,107,74,0.1)" : "rgba(255,107,74,0.1)", color: "#FF6B4A" }}>
+        style={{ background: "rgba(255,107,74,0.1)", color: "#FF6B4A" }}>
         <Icon className="w-5 h-5" />
       </div>
     </motion.div>
@@ -324,7 +324,7 @@ export default function Login() {
             <StatCard icon={Leaf} value="0 waste" label="Goal" delay={0.6} />
           </div>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} 
-            className="absolute -bottom-20 left-0 text-[10px] font-medium tracking-wider uppercase transition-colors duration-500" style={{ color: dark ? "#000000" : "#000000" }}>
+            className="absolute -bottom-20 left-0 text-[10px] font-medium tracking-wider uppercase transition-colors duration-500" style={{ color: dark ? "#8A7A6E" : "#000000" }}>
             Nutrition today. A healthier tomorrow.
           </motion.p>
         </div>

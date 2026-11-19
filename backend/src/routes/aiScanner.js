@@ -123,7 +123,7 @@ router.post("/estimate-food", express.json(), async (req, res) => {
     const { foodName, quantity } = req.body;
     if (!foodName) return res.status(400).json({ error: "No food name provided." });
 
-    const qtyMultiplier = quantity && !isNaN(quantity) ? parseFloat(quantity) / 100 : 1; // Default to 100g if no qty
+    const qtyMultiplier = quantity && !Number.isNaN(Number.parseFloat(quantity)) ? Number.parseFloat(quantity) / 100 : 1; // Default to 100g if no qty
 
     // Use USDA API
     const usdaKey = process.env.USDA_API_KEY;

@@ -195,7 +195,7 @@ export default function ChatBot() {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
             className="flex gap-2 flex-wrap py-3 shrink-0">
             {SUGGESTIONS.map(s => (
-              <button key={s} onClick={() => send(s)}
+              <button key={s} onClick={() => void send(s)}
                 className="glass px-3 py-2 rounded-xl text-xs text-black dark:text-white hover:text-mint-400 hover:border-mint-500/20 transition-all text-left">{s}</button>
             ))}
           </motion.div>
@@ -205,12 +205,12 @@ export default function ChatBot() {
       {/* Input dock */}
       <div className="shrink-0 pt-3 mt-3">
         <div className="rounded-2xl p-3 glass">
-          <form onSubmit={e => { e.preventDefault(); send(); }} className="flex gap-3 items-end">
+          <form onSubmit={e => { e.preventDefault(); void send(); }} className="flex gap-3 items-end">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={e => { setInput(e.target.value); resize(); }}
-              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
               placeholder="Ask about your food, nutrition, meal ideas..."
               rows={1}
               style={{ resize: "none" }}

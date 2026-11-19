@@ -15,7 +15,7 @@ const signToken = (user) =>
 export const otpStore = new Map()
 
 // Helper to generate a 6-digit numeric OTP
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
+const generateOTP = () => crypto.randomInt(100000, 1000000).toString()
 
 export async function signup(req, res, next) {
   try {

@@ -140,7 +140,7 @@ export default function CalorieTracker() {
       setShowScanConfirm(false);
       setScanResult(null);
       localStorage.removeItem(`ai_advice_${currentDate}`);
-      fetchStats();
+      await fetchStats();
     } catch (err) {
       console.error(err);
     } finally {
@@ -189,12 +189,12 @@ export default function CalorieTracker() {
   };
   
   useEffect(() => {
-    fetchStats();
+    void fetchStats();
   }, [currentDate]);
 
   useEffect(() => {
     if (!loading && !advice && !gettingAdvice && data.goals) {
-      getDietExerciseAdvice();
+      void getDietExerciseAdvice();
     }
   }, [loading]);
 
@@ -224,7 +224,7 @@ export default function CalorieTracker() {
       setShowLogModal(false);
       setNewLog({ itemName: '', quantity: '100', calories: '', protein: '', carbs: '', fat: '', mealType: 'snack' });
       localStorage.removeItem(`ai_advice_${currentDate}`);
-      fetchStats();
+      await fetchStats();
     } catch (err) {
       console.error(err);
     } finally {
@@ -257,7 +257,7 @@ export default function CalorieTracker() {
     try {
       await api.delete(`/api/calories/${id}`);
       localStorage.removeItem(`ai_advice_${currentDate}`);
-      fetchStats();
+      await fetchStats();
     } catch (err) {
       console.error(err);
     }
@@ -428,8 +428,8 @@ export default function CalorieTracker() {
           <button onClick={() => setShowLogModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#FF6B4A] text-white rounded-xl font-medium hover:bg-[#E85A3A] transition-colors shadow-lg">
             <Plus className="w-4 h-4" /> Log Meal
           </button>
-          <input type="file" ref={fileInputRef} onChange={(e) => { setShowScanModal(false); handleScan(e); }} accept="image/*" className="hidden" />
-          <input type="file" ref={cameraInputRef} onChange={(e) => { setShowScanModal(false); handleScan(e); }} accept="image/*" capture="environment" className="hidden" />
+          <input type="file" ref={fileInputRef} onChange={(e) => { setShowScanModal(false); void handleScan(e); }} accept="image/*" className="hidden" />
+          <input type="file" ref={cameraInputRef} onChange={(e) => { setShowScanModal(false); void handleScan(e); }} accept="image/*" capture="environment" className="hidden" />
         </div>
       </motion.div>
 
@@ -654,6 +654,9 @@ export default function CalorieTracker() {
               <div 
                 key={log.id || log._id} 
                 onClick={() => setSelectedLog(log)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedLog(log); } }}
                 className="flex justify-between items-center p-4 rounded-2xl cursor-pointer hover:opacity-80 transition-opacity" 
                 style={{ background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
               >
@@ -668,7 +671,7 @@ export default function CalorieTracker() {
                       Protein: {(log.protein || 0) * (log.servings || 1)}g • Carbs: {(log.carbs || 0) * (log.servings || 1)}g • Fat: {(log.fat || 0) * (log.servings || 1)}g
                     </p>
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); handleDelete(log.id || log._id); }} className="p-2 text-zinc-400 hover:text-red-500 transition-colors" title="Delete Log">
+                  <button onClick={(e) => { e.stopPropagation(); void handleDelete(log.id || log._id); }} className="p-2 text-zinc-400 hover:text-red-500 transition-colors" title="Delete Log">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -690,8 +693,8 @@ export default function CalorieTracker() {
           <Input label="Calories" required type="number" value={newLog.calories} onChange={e => setNewLog({...newLog, calories: e.target.value})} placeholder="kcal" />
           
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
-            <select value={newLog.mealType} onChange={e => setNewLog({...newLog, mealType: e.target.value})} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? "#FDF6F0" : "#1A1210" }}>
+            <label htmlFor="log-meal-type" className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
+            <select id="log-meal-type" value={newLog.mealType} onChange={e => setNewLog({...newLog, mealType: e.target.value})} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? "#FDF6F0" : "#1A1210" }}>
               <option value="breakfast" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Breakfast</option>
               <option value="lunch" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Lunch</option>
               <option value="dinner" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Dinner</option>
@@ -769,8 +772,8 @@ export default function CalorieTracker() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
-              <select value={scanMealType} onChange={e => setScanMealType(e.target.value)} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
+              <label htmlFor="scan-meal-type" className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meal Type</label>
+              <select id="scan-meal-type" value={scanMealType} onChange={e => setScanMealType(e.target.value)} className="w-full glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/50 transition-all duration-200" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>
                 <option value="breakfast" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Breakfast</option>
                 <option value="lunch" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Lunch</option>
                 <option value="dinner" className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">Dinner</option>

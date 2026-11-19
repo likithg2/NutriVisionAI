@@ -15,4 +15,7 @@ const puppeteer = require('puppeteer');
   await page.screenshot({path: 'calories_test_success.png'});
   await browser.close();
   console.log('Done screenshot');
-})();
+})().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

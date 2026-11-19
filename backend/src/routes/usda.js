@@ -174,9 +174,12 @@ router.get("/search", async (req, res) => {
 router.get("/food/:id", async (req, res) => {
   const apiKey = process.env.USDA_API_KEY || "DEMO_KEY";
   const { id } = req.params;
+  if (!id || !/^[a-zA-Z0-9]+$/.test(id)) {
+    return res.status(400).json({ error: "Invalid food ID format" });
+  }
 
   try {
-    const response = await fetch(`${BASE_URL}/food/${id}?api_key=${apiKey}`);
+    const response = await fetch(`${BASE_URL}/food/${encodeURIComponent(id)}?api_key=${apiKey}`);
     
     if (!response.ok) {
       if (response.status === 429) {

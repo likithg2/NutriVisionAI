@@ -33,7 +33,7 @@ const FILTERS = [
 
 function fmtDate(dateStr) {
   const d = new Date(dateStr);
-  if (isNaN(d)) return "";
+  if (Number.isNaN(d.getTime())) return "";
   const now = new Date();
   const diffMs = now - d;
   if (diffMs < 60000) return "Just now";
@@ -148,6 +148,9 @@ export default function ActivityLog() {
                         <div 
                           className="flex-1 rounded-xl p-4 transition-all glass cursor-pointer hover:shadow-lg hover:scale-[1.01]"
                           onClick={() => setSelectedLog(log)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedLog(log); } }}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">

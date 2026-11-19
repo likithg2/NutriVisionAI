@@ -91,9 +91,16 @@ router.post("/", async (req, res) => {
 
     // Extract JSON from response
     let jsonStr = text;
-    const jsonMatch = text.match(/\`\`\`(?:json)?\s*([\s\S]*?)\`\`\`/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1].trim();
+    const fenceStart = text.indexOf('```');
+    if (fenceStart !== -1) {
+      const fenceEnd = text.indexOf('```', fenceStart + 3);
+      if (fenceEnd !== -1) {
+        let block = text.slice(fenceStart + 3, fenceEnd).trim();
+        if (block.toLowerCase().startsWith('json')) {
+          block = block.slice(4).trim();
+        }
+        jsonStr = block;
+      }
     } else {
       const braceStart = text.indexOf('{');
       const braceEnd = text.lastIndexOf('}');

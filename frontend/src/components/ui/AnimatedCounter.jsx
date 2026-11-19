@@ -12,7 +12,7 @@ export default function AnimatedCounter({ value, duration = 800, decimals = 0, p
       if (!start.current) start.current = timestamp;
       const progress = Math.min((timestamp - start.current) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(parseFloat((startVal + (target - startVal) * eased).toFixed(decimals)));
+      setDisplay(Number.parseFloat((startVal + (target - startVal) * eased).toFixed(decimals)));
       if (progress < 1) raf.current = requestAnimationFrame(step);
     };
     raf.current = requestAnimationFrame(step);

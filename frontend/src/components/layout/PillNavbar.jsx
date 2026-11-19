@@ -80,8 +80,8 @@ export default function PillNavbar() {
 
   useEffect(() => {
     if (user) {
-      fetchNotifs();
-      const interval = setInterval(fetchNotifs, 60000);
+      void fetchNotifs();
+      const interval = setInterval(() => { void fetchNotifs(); }, 60000);
       return () => clearInterval(interval);
     }
   }, [user]);
@@ -89,7 +89,7 @@ export default function PillNavbar() {
   const markRead = async (id) => {
     try {
       await markMany({ ids: [id], read: true });
-      fetchNotifs();
+      await fetchNotifs();
     } catch (err) {
       console.error(err);
     }
@@ -98,7 +98,7 @@ export default function PillNavbar() {
   const openNotification = (notif) => {
     setSelectedNotification(notif);
     const id = notif._id || notif.id;
-    if (id && !notif.read) markRead(id);
+    if (id && !notif.read) void markRead(id);
   };
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function PillNavbar() {
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
             className="fixed top-28 right-6 z-[9999] flex items-start gap-3 px-4 py-3 rounded-2xl text-sm font-medium shadow-2xl backdrop-blur-2xl cursor-pointer"
             style={{ background: dark ? "rgba(26,18,16,0.92)" : "rgba(255,255,255,0.92)", border: "1px solid rgba(255,107,74,0.3)" }}
-            onClick={() => { setToastNotif(null); setShowNotifications(true); fetchNotifs(); }}
+            onClick={() => { setToastNotif(null); setShowNotifications(true); void fetchNotifs(); }}
           >
             <div className="w-8 h-8 rounded-full bg-[#FF6B4A]/10 flex items-center justify-center shrink-0">
               <Bell className="w-4 h-4 text-[#FF6B4A]" />
@@ -221,7 +221,7 @@ export default function PillNavbar() {
             <div className="relative">
               <motion.button
                 whileTap={{ scale: 0.92 }}
-                onClick={() => { setShowNotifications(true); fetchNotifs(); }}
+                onClick={() => { setShowNotifications(true); void fetchNotifs(); }}
                 className="w-9 h-9 rounded-full flex items-center justify-center transition-colors outline-none hover:text-[#FF6B4A] relative"
                 style={{ color: dark ? "#C9B8AE" : "#6B6560", background: "transparent" }}
               >
@@ -386,19 +386,22 @@ export default function PillNavbar() {
               <div 
                 key={n.id || n._id} 
                 onClick={() => openNotification(n)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openNotification(n); } }}
                 className="p-4 rounded-xl relative group flex flex-col gap-1 cursor-pointer hover:shadow-md transition-all" 
                 style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}
               >
                 <div className="flex justify-between items-start gap-2">
                   <h4 className="font-semibold text-sm" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{n.title}</h4>
                   {!n.read && (
-                    <button onClick={(e) => { e.stopPropagation(); markRead(n.id || n._id); }} className="text-mint-500 hover:text-mint-600 p-1 bg-mint-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" title="Mark as read">
+                    <button onClick={(e) => { e.stopPropagation(); void markRead(n.id || n._id); }} className="text-mint-500 hover:text-mint-600 p-1 bg-mint-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" title="Mark as read">
                       <Check className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
                 <p className="text-sm" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>{n.message}</p>
-                <p className="text-xs mt-1" style={{ color: dark ? '#a1a1aa' : '#a1a1aa' }}>{new Date(n.createdAt).toLocaleString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })}</p>
+                <p className="text-xs mt-1" style={{ color: dark ? '#a1a1aa' : '#71717a' }}>{new Date(n.createdAt).toLocaleString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })}</p>
                 {!n.read && <div className="absolute left-0 top-0 bottom-0 w-1 bg-mint-500 rounded-l-xl" />}
               </div>
             ))

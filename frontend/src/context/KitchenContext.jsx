@@ -71,7 +71,7 @@ export function KitchenProvider({ children }) {
       }
     };
 
-    fetchRecipes(false);
+    void fetchRecipes(false);
   }, [items, lastUpdated, token]);
 
   const refreshRecipes = async () => {

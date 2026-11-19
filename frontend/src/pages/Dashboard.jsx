@@ -363,7 +363,7 @@ export default function Dashboard() {
       if (!dateString) return "";
       if (dateString.length === 10) return dateString; // Already YYYY-MM-DD
       const d = new Date(dateString);
-      if (isNaN(d.getTime())) return dateString;
+      if (Number.isNaN(d.getTime())) return dateString;
       return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     };
 

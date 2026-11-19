@@ -114,7 +114,8 @@ import { markExpired } from '../controllers/itemController.js'
  * Create a notification record AND attempt to send push/email.
  * Returns true on success, false on failure.
  */
-async function notifyUser(userId, title, body, type = 'system') {
+async function notifyUser(userOrId, title, body, type = 'system', prefs = null) {
+  const userId = typeof userOrId === 'object' && userOrId !== null ? userOrId.id : userOrId;
   try {
     await Notification.create({
       userId,
@@ -127,7 +128,7 @@ async function notifyUser(userId, title, body, type = 'system') {
     await sendPushToUser(userId, title, body).catch(e =>
       console.warn('[cron] push error', e?.message || e)
     );
-    const user = await User.findByPk(userId);
+    const user = typeof userOrId === 'object' && userOrId !== null ? userOrId : await User.findByPk(userId);
     if (user && user.email) { await sendEmail(user.email, title, body).catch(e => console.warn('[cron] email error', e?.message || e)); }
     return true;
   } catch (err) {
@@ -237,7 +238,7 @@ export function initCronJobs() {
   )
 
   // Immediate one-off run at server startup to fix already-past items
-  ;(async () => {
+  void (async () => {
     try {
       console.log('[cron] Initial markExpired() at startup:', new Date().toISOString())
       const res = await markExpired()

@@ -76,7 +76,7 @@ export const getDailyStats = async (req, res) => {
 
 export const getHistory = async (req, res) => {
   try {
-    const days = parseInt(req.query.days) || 7;
+    const days = Number.parseInt(req.query.days, 10) || 7;
     const past = new Date();
     past.setDate(past.getDate() - (days - 1));
     const startDate = past.toISOString().split('T')[0];

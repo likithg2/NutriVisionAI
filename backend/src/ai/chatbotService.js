@@ -168,7 +168,7 @@
 // //   }
 
 // //   // when does X expire?
-// //   let m = t.match(/\bwhen (?:does|is)\s+(?:the|my|a)?\s*([a-z0-9\-\_\' ]{1,80})\s*(?:expire|expires|expiry|expiring)?\b/i);
+// //   let m = t.match(/\bwhen (?:does|is)(?:\s+(?:the|my|a))?\s+([a-z0-9_']+(?:\s+[a-z0-9_']+)*?)\s+(?:expire|expires|expiry|expiring)\b/i) || t.match(/\bwhen (?:does|is)(?:\s+(?:the|my|a))?\s+([a-z0-9_']+(?:\s+[a-z0-9_']+)*)\b/i);
 // //   if (m && m[1]) return { intent: 'when_item_expires', params: { name: m[1].trim() } };
 
 // //   // "what about X expiry" / direct item "bread expiry"
@@ -197,10 +197,10 @@
 // //   }
 
 // //   // safety after expiry: "is it safe to eat X 2 days after expiry"
-// //   m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b.*?(\d+)\s*days?\s*(after|later)?/);
+// //   m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b[^0-9]*?(\d+)\s*days?(?:\s*(after|later))?/);
 // //   if (m) {
 // //     // try to capture item before that phrase
-// //     const nameMatch = t.match(/(?:is it safe to|safe to|can i (?:eat|consume|use))\s*(.*?)\s*\d+\s*days?/);
+// //     const nameMatch = t.match(/(?:is it safe to(?:\s+(?:eat|consume|use))?|safe to(?:\s+(?:eat|consume|use))?|can i\s+(?:eat|consume|use))\s*([^0-9]*?)\s*\d+\s*days?/i);
 // //     const name = nameMatch && nameMatch[1] ? nameMatch[1].trim() : null;
 // //     return { intent: 'safety_after_expiry', params: { days: Number(m[3]), name } };
 // //   }
@@ -514,7 +514,7 @@
 //     return { intent: 'item_details', params: { name } };
 //   }
 
-//   let m = t.match(/\bwhen (?:does|is)\s+(?:the|my|a)?\s*([a-z0-9\-\_\' ]{1,80})\s*(?:expire|expires|expiry|expiring)?\b/i);
+//   let m = t.match(/\bwhen (?:does|is)(?:\s+(?:the|my|a))?\s+([a-z0-9_']+(?:\s+[a-z0-9_']+)*?)\s+(?:expire|expires|expiry|expiring)\b/i) || t.match(/\bwhen (?:does|is)(?:\s+(?:the|my|a))?\s+([a-z0-9_']+(?:\s+[a-z0-9_']+)*)\b/i);
 //   if (m && m[1]) return { intent: 'when_item_expires', params: { name: m[1].trim() } };
 
 //   m = t.match(/\b([a-z0-9\-\_\' ]{1,80})\s+(?:expire|expires|expiry|expiring)\b/i);
@@ -538,9 +538,9 @@
 //     return { intent: 'recipes_with_expiring', params: { days: n ? Number(n[2]) : 7 } };
 //   }
 
-//   m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b.*?(\d+)\s*days?\s*(after|later)?/);
+//   m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b[^0-9]*?(\d+)\s*days?(?:\s*(after|later))?/);
 //   if (m) {
-//     const nameMatch = t.match(/(?:is it safe to|safe to|can i (?:eat|consume|use))\s*(.*?)\s*\d+\s*days?/);
+//     const nameMatch = t.match(/(?:is it safe to(?:\s+(?:eat|consume|use))?|safe to(?:\s+(?:eat|consume|use))?|can i\s+(?:eat|consume|use))\s*([^0-9]*?)\s*\d+\s*days?/i);
 //     const name = nameMatch && nameMatch[1] ? nameMatch[1].trim() : null;
 //     return { intent: 'safety_after_expiry', params: { days: Number(m[3]), name } };
 //   }
@@ -1198,7 +1198,7 @@ function detectIntent(text) {
     return { intent: 'item_details', params: { name } };
   }
 
-  let m = t.match(/\bwhen (?:does|is)\s+(?:the|my|a)?\s*([a-z0-9\-\_\' ]{1,80})\s*(?:expire|expires|expiry|expiring)?\b/i);
+  let m = t.match(/\bwhen (?:does|is)(?:\s+(?:the|my|a))?\s+([a-z0-9_']+(?:\s+[a-z0-9_']+)*?)\s+(?:expire|expires|expiry|expiring)\b/i) || t.match(/\bwhen (?:does|is)(?:\s+(?:the|my|a))?\s+([a-z0-9_']+(?:\s+[a-z0-9_']+)*)\b/i);
   if (m && m[1]) return { intent: 'when_item_expires', params: { name: m[1].trim() } };
 
   m = t.match(/\b([a-z0-9\-\_\' ]{1,80})\s+(?:expire|expires|expiry|expiring)\b/i);
@@ -1232,9 +1232,9 @@ function detectIntent(text) {
     return { intent: 'expiring_in_days', params: { days: 7 } };
   }
 
-  m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b.*?(\d+)\s*days?\s*(after|later)?/);
+  m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b[^0-9]*?(\d+)\s*days?(?:\s*(after|later))?/);
   if (m) {
-    const nameMatch = t.match(/(?:is it safe to|safe to|can i (?:eat|consume|use))\s*(.*?)\s*\d+\s*days?/);
+    const nameMatch = t.match(/(?:is it safe to(?:\s+(?:eat|consume|use))?|safe to(?:\s+(?:eat|consume|use))?|can i\s+(?:eat|consume|use))\s*([^0-9]*?)\s*\d+\s*days?/i);
     const name = nameMatch && nameMatch[1] ? nameMatch[1].trim() : null;
     return { intent: 'safety_after_expiry', params: { days: Number(m[3]), name } };
   }

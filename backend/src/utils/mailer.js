@@ -28,8 +28,8 @@ function ensureTransporter() {
   }
   transporter = nodemailer.createTransport({
     host: host,
-    port: parseInt(port, 10),
-    secure: parseInt(port, 10) === 465,
+    port: Number.parseInt(port, 10),
+    secure: Number.parseInt(port, 10) === 465,
     auth: { user, pass },
   });
   return transporter;

@@ -37,18 +37,18 @@ export default function Kitchen() {
     try {
       // Basic extraction from macros string: "450 kcal | 40g Protein" etc.
       const macrosStr = selectedRecipe.macros || "";
-      const caloriesMatch = macrosStr.match(/(\d+)\s*(kcal|calories)/i);
-      const proteinMatch = macrosStr.match(/(\d+)\s*g\s*protein/i);
-      const carbsMatch = macrosStr.match(/(\d+)\s*g\s*carbs/i);
-      const fatMatch = macrosStr.match(/(\d+)\s*g\s*fat/i);
+      const caloriesMatch = macrosStr.match(/\b(\d+)\s*(?:kcal|calories)\b/i);
+      const proteinMatch = macrosStr.match(/\b(\d+)\s*g\s*protein\b/i);
+      const carbsMatch = macrosStr.match(/\b(\d+)\s*g\s*carbs\b/i);
+      const fatMatch = macrosStr.match(/\b(\d+)\s*g\s*fat\b/i);
 
       const logData = {
         itemName: selectedRecipe.title,
         quantity: "1 serving",
-        calories: caloriesMatch ? parseInt(caloriesMatch[1], 10) : 0,
-        protein: proteinMatch ? parseInt(proteinMatch[1], 10) : 0,
-        carbs: carbsMatch ? parseInt(carbsMatch[1], 10) : 0,
-        fat: fatMatch ? parseInt(fatMatch[1], 10) : 0,
+        calories: caloriesMatch ? Number.parseInt(caloriesMatch[1], 10) : 0,
+        protein: proteinMatch ? Number.parseInt(proteinMatch[1], 10) : 0,
+        carbs: carbsMatch ? Number.parseInt(carbsMatch[1], 10) : 0,
+        fat: fatMatch ? Number.parseInt(fatMatch[1], 10) : 0,
         mealType: "lunch", // default
         date: new Date().toISOString().split('T')[0]
       };
@@ -429,7 +429,7 @@ export default function Kitchen() {
               Cancel
             </button>
             <button 
-              onClick={() => { setShowLogConfirm(false); handleLogRecipe(); }}
+              onClick={() => { setShowLogConfirm(false); void handleLogRecipe(); }}
               className="px-4 py-2 bg-[#FF6B4A] text-white font-medium rounded-xl shadow-lg hover:opacity-90"
             >
               Yes, Log It!

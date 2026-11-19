@@ -171,7 +171,7 @@ export default function Inventory() {
 
   useEffect(() => {
     if (shopModalOpen && !recommendations && !shopLoading) {
-      fetchRecommendations(false);
+      void fetchRecommendations(false);
     }
   }, [shopModalOpen]);
 
@@ -330,7 +330,7 @@ export default function Inventory() {
     finally { setScanLoading(false); }
   };
 
-  const handleDrop = e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) doScan(f); };
+  const handleDrop = e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) void doScan(f); };
 
   const filtered = items.filter(item => {
     const ms = !search || item.name?.toLowerCase().includes(search.toLowerCase());
@@ -432,6 +432,9 @@ export default function Inventory() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => !scanLoading && fileRef.current?.click()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!scanLoading) fileRef.current?.click(); } }}
                 className={`relative flex flex-col items-center justify-center gap-4 py-14 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-300 ${
                   dragOver ? "border-mint-400 bg-mint-500/10 scale-[1.01]" : "border-zinc-700 hover:border-zinc-500 hover:bg-white/[0.02]"
                 }`}
@@ -461,10 +464,11 @@ export default function Inventory() {
 
               {/* Name with USDA autocomplete */}
               <div className="relative">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">Item Name *</label>
+                <label htmlFor="inventory-item-name" className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">Item Name *</label>
                 <div className="relative">
                   <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                   <input
+                    id="inventory-item-name"
                     value={editItem ? form.name : usda.query}
                     onChange={e => { if (!editItem) { usda.search(e.target.value); setForm(f => ({...f, name: e.target.value})); } else setForm(f=>({...f,name:e.target.value})); }}
                     onFocus={() => usda.results.length > 0 && usda.setOpen(true)}
@@ -497,8 +501,8 @@ export default function Inventory() {
               <div className="grid grid-cols-2 gap-3">
                 <Input label="Brand" value={form.brand} onChange={e => setForm(f=>({...f,brand:e.target.value}))} />
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Category</label>
-                  <select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} className="glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/40 bg-transparent">
+                  <label htmlFor="inventory-item-category" className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Category</label>
+                  <select id="inventory-item-category" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} className="glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/40 bg-transparent">
                     {CATS.map(c => <option key={c} value={c} className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{c}</option>)}
                   </select>
                 </div>
@@ -512,8 +516,8 @@ export default function Inventory() {
                   onChange={e=>setForm(f=>({...f,quantity:e.target.value}))} 
                 />
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Unit</label>
-                  <select value={form.unit} onChange={e=>setForm(f=>({...f,unit:e.target.value}))} className="glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/40 bg-transparent">
+                  <label htmlFor="inventory-item-unit" className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Unit</label>
+                  <select id="inventory-item-unit" value={form.unit} onChange={e=>setForm(f=>({...f,unit:e.target.value}))} className="glass rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-mint-500/40 bg-transparent">
                     {SI_UNITS.map(u => <option key={u} value={u} className="bg-white dark:bg-[#1A1210] text-zinc-900 dark:text-zinc-100">{u}</option>)}
                   </select>
                 </div>
@@ -552,7 +556,7 @@ export default function Inventory() {
       <Modal open={shopModalOpen} onClose={() => setShopModalOpen(false)} title={
         <div className="flex justify-between items-center w-full">
           <span>Smart Shopping List</span>
-          <button onClick={(e) => { e.stopPropagation(); fetchRecommendations(true); }} disabled={shopLoading} className={`p-1 mr-4 transition-colors ${shopLoading ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'text-sky-400 hover:text-sky-500'}`}>
+          <button onClick={(e) => { e.stopPropagation(); void fetchRecommendations(true); }} disabled={shopLoading} className={`p-1 mr-4 transition-colors ${shopLoading ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'text-sky-400 hover:text-sky-500'}`}>
             <RotateCw className={`w-5 h-5 ${shopLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>

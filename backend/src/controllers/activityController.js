@@ -29,7 +29,7 @@ export async function createActivity(req, res, next) {
 
 export async function listActivities(req, res, next) {
   try {
-    const limit = Math.min(200, parseInt(req.query.limit || '50', 10) || 50);
+    const limit = Math.min(200, Number.parseInt(req.query.limit || '50', 10) || 50);
 
     const authUserId = req.user?.id;
     if (!authUserId) return res.status(401).json({ error: 'Unauthorized' });

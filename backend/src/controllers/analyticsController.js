@@ -125,7 +125,7 @@ export async function dashboardAnalytics(req, res, next) {
       }
     }
     
-    const byDay = Object.keys(byDayMap).sort().map(date => ({
+    const byDay = Object.keys(byDayMap).sort((a, b) => a.localeCompare(b)).map(date => ({
       date,
       added: byDayMap[date].added,
       expiring: byDayMap[date].expiring

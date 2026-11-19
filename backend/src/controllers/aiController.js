@@ -160,7 +160,7 @@ You MUST return a raw JSON array (do not wrap in markdown code blocks like \`\`\
 ]
 `;
     
-    const promptHash = crypto.createHash('md5').update(prompt).digest('hex');
+    const promptHash = crypto.createHash('sha256').update(prompt).digest('hex');
     
     if (!force && user && user.kitchenCache && user.kitchenCache.hash === promptHash && user.kitchenCache.data && user.kitchenCache.data.length > 2) {
       return user.kitchenCache.data;
@@ -179,9 +179,10 @@ You MUST return a raw JSON array (do not wrap in markdown code blocks like \`\`\
       if (!text) throw new Error("No response text from AI");
       // Strip markdown code blocks if present
       let cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-      const match = cleanText.match(/\[[\s\S]*\]/);
-      if (!match) throw new Error("No JSON array found in response");
-      recipes = JSON.parse(match[0]);
+      const firstBracket = cleanText.indexOf('[');
+      const lastBracket = cleanText.lastIndexOf(']');
+      if (firstBracket === -1 || lastBracket <= firstBracket) throw new Error("No JSON array found in response");
+      recipes = JSON.parse(cleanText.substring(firstBracket, lastBracket + 1));
       
       // Ensure we have at least the requested number minus a small margin of error
       if (recipes.length < 3) {
@@ -270,7 +271,7 @@ IMPORTANT: You MUST format your response as a raw JSON array (do not wrap in mar
 ]
 `;
 
-    const promptHash = crypto.createHash('md5').update(prompt).digest('hex');
+    const promptHash = crypto.createHash('sha256').update(prompt).digest('hex');
     
     if (!force && user && user.shoppingCache && user.shoppingCache.hash === promptHash) {
       return res.json({ reply: user.shoppingCache.data });
@@ -289,9 +290,10 @@ IMPORTANT: You MUST format your response as a raw JSON array (do not wrap in mar
       if (!text) throw new Error("No response text from AI");
       // Strip markdown code blocks if present
       let cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-      const match = cleanText.match(/\[[\s\S]*\]/);
-      if (!match) throw new Error("No JSON array found in response");
-      shoppingItems = JSON.parse(match[0]);
+      const firstBracket = cleanText.indexOf('[');
+      const lastBracket = cleanText.lastIndexOf(']');
+      if (firstBracket === -1 || lastBracket <= firstBracket) throw new Error("No JSON array found in response");
+      shoppingItems = JSON.parse(cleanText.substring(firstBracket, lastBracket + 1));
     } catch (parseError) {
       console.error("Failed to parse shopping JSON:", parseError);
       shoppingItems = [
@@ -348,7 +350,7 @@ ${inventoryText}
 Format your response strictly as a bulleted list (using '- ' for bullets) with a very brief introductory sentence. Keep the entire response under 3 or 4 short bullet points. Do not use markdown headers.
 `;
 
-    const promptHash = crypto.createHash('md5').update(prompt).digest('hex');
+    const promptHash = crypto.createHash('sha256').update(prompt).digest('hex');
     
     if (!force && user && user.dashboardCache && user.dashboardCache.hash === promptHash) {
       return res.json({ reply: user.dashboardCache.data });
