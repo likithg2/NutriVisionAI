@@ -1234,8 +1234,16 @@ function detectIntent(text) {
 
   m = t.match(/\b(is it safe to|safe to|can i (eat|consume|use))\b[^0-9]*?(\d+)\s*days?(?:\s*(after|later))?/);
   if (m) {
-    const nameMatch = t.match(/(?:is it safe to|safe to|can i\s+(?:eat|consume|use))\s+(?:eat\s+|consume\s+|use\s+)?([a-z0-9 _'-]{0,60}?)\s*\d+\s*days?/i);
-    const name = nameMatch && nameMatch[1] ? nameMatch[1].trim() : null;
+    // Extract item name without backtracking-prone regex:
+    // Strip the safety prefix, then take everything before the digit count
+    const safetyPrefixMatch = t.match(/^.*?(?:is it safe to|safe to|can i\s+(?:eat|consume|use))\s*/i);
+    const afterPrefix = safetyPrefixMatch ? t.slice(safetyPrefixMatch[0].length) : t;
+    // Remove leading action verb if present ("eat ", "consume ", "use ")
+    const afterVerb = afterPrefix.replace(/^(?:eat|consume|use)\s+/i, '');
+    // Everything before the digit is the item name
+    const digitIdx = afterVerb.search(/\d/);
+    const rawName = digitIdx > 0 ? afterVerb.slice(0, digitIdx).trim() : null;
+    const name = rawName || null;
     return { intent: 'safety_after_expiry', params: { days: Number(m[3]), name } };
   }
 
