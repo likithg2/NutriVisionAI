@@ -153,4 +153,3 @@ Navigate to `http://localhost:5173` in your browser.
 ## ⭐ Project Information
 **NutriVision AI** — *Making food and nutrition analysis simpler, smarter, and more aesthetic with AI.*
 
-Repository: `https://github.com/likithg2/calorie-ai`
