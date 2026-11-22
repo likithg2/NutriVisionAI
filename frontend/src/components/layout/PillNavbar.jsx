@@ -146,12 +146,12 @@ export default function PillNavbar() {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="fixed top-0 left-0 right-0 z-[200] px-4 py-6 pointer-events-none flex justify-center w-full">
+      <div className="fixed top-0 left-0 right-0 z-[200] px-2 sm:px-4 py-3 sm:py-6 pointer-events-none flex justify-center w-full">
         <motion.nav
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="w-full max-w-6xl pointer-events-auto rounded-full px-8 py-3.5 flex items-center justify-between transition-all duration-300"
+          className="w-full max-w-6xl pointer-events-auto rounded-full px-3 sm:px-6 md:px-8 py-2 sm:py-3.5 flex items-center justify-between transition-all duration-300"
           style={{
             background: dark ? "rgba(20,12,10,0.5)" : "rgba(255,255,255,0.4)",
             backdropFilter: "blur(8px)",
@@ -322,10 +322,10 @@ export default function PillNavbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="w-full max-w-sm h-full shadow-2xl flex flex-col p-6"
-              style={{ background: dark ? "rgba(26,18,16,0.8)" : "rgba(253,246,236,0.7)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderLeft: dark ? "1px solid rgba(255,140,90,0.15)" : "1px solid rgba(255,255,255,0.4)" }}
+              className="w-full max-w-sm h-full shadow-2xl flex flex-col p-6 overflow-y-auto"
+              style={{ background: dark ? "rgba(26,18,16,0.92)" : "rgba(253,246,236,0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderLeft: dark ? "1px solid rgba(255,140,90,0.15)" : "1px solid rgba(255,255,255,0.4)" }}
             >
-              <div className="flex justify-between items-center mb-12">
+              <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-3">
                   <img src="/custom-logo.png" alt="Logo" className="w-10 h-10 object-contain drop-shadow-md" />
                   <span className="font-semibold text-lg" style={{ color: dark ? "#FDF6F0" : "#1A1210" }}>
@@ -341,12 +341,40 @@ export default function PillNavbar() {
                 </button>
               </div>
 
+              {/* User Profile Card in Drawer */}
+              {user && (
+                <Link 
+                  to="/settings" 
+                  onClick={() => setMobileOpen(false)}
+                  className="p-3.5 rounded-2xl flex items-center gap-3.5 mb-6 glass transition-all"
+                  style={{ border: dark ? "1px solid rgba(255,140,90,0.2)" : "1px solid rgba(255,255,255,0.5)" }}
+                >
+                  <div 
+                    className="w-11 h-11 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-md overflow-hidden shrink-0"
+                    style={{ background: "linear-gradient(135deg, #FF7A45, #FF4D6D)" }}
+                  >
+                    {avatarSrc && !avatarError ? (
+                      <img src={avatarSrc} alt={user?.name || "Avatar"} className="w-full h-full object-cover" onError={() => setAvatarError(true)} />
+                    ) : initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm truncate" style={{ color: dark ? "#FDF6F0" : "#1A1210" }}>
+                      {user?.name || "My Account"}
+                    </p>
+                    <p className="text-xs text-zinc-500 truncate">{user?.email || "Settings & Profile"}</p>
+                  </div>
+                </Link>
+              )}
+
               <div className="flex flex-col gap-6 flex-1">
                 {navLinks.map((link, i) => {
                   const isActive = location.pathname.startsWith(link.path);
                   return (
                     <motion.div key={link.path} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
-                      <Link to={link.path} className="text-2xl font-semibold outline-none flex items-center gap-3 group"
+                      <Link 
+                        to={link.path} 
+                        onClick={() => setMobileOpen(false)}
+                        className="text-xl sm:text-2xl font-semibold outline-none flex items-center gap-3 group py-1"
                         style={{ color: isActive ? "#FF6B4A" : (dark ? "#FDF6F0" : "#1A1210") }}>
                         {link.label || link.name}
                         {isActive && <motion.div layoutId="mobileActive" className="w-2 h-2 rounded-full" style={{ background: "#FF6B4A" }} />}
@@ -356,11 +384,21 @@ export default function PillNavbar() {
                 })}
                 
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + navLinks.length * 0.05 }}>
-                   <Link to="/settings" className="text-2xl font-semibold outline-none flex items-center gap-3 group"
+                   <Link to="/settings" onClick={() => setMobileOpen(false)} className="text-xl sm:text-2xl font-semibold outline-none flex items-center gap-3 group py-1"
                         style={{ color: location.pathname.startsWith("/settings") ? "#FF6B4A" : (dark ? "#FDF6F0" : "#1A1210") }}>
                         Settings
                    </Link>
                 </motion.div>
+              </div>
+
+              {/* Mobile Logout Button */}
+              <div className="pt-6 mt-auto border-t border-black/5 dark:border-white/5">
+                <button 
+                  onClick={() => { setMobileOpen(false); setShowLogoutConfirm(true); }}
+                  className="flex items-center gap-3 text-red-500 font-semibold text-base py-2 hover:opacity-80 transition-opacity w-full"
+                >
+                  <LogOut className="w-5 h-5" /> Logout
+                </button>
               </div>
             </motion.div>
           </motion.div>

@@ -73,23 +73,23 @@ export default function Kitchen() {
   const globalRecipes = recipes.filter(r => !r.globalCuisine || (!r.globalCuisine.toLowerCase().includes('local') && !r.globalCuisine.toLowerCase().includes('country')));
 
   return (
-    <div className="max-w-4xl mx-auto px-4 pt-6 pb-12 sm:pt-8">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-[#FF7A45] to-[#FF4D6D] shadow-lg shadow-orange-500/20 text-white">
-            <ChefHat size={28} />
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8 pb-12">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br from-[#FF7A45] to-[#FF4D6D] shadow-lg shadow-orange-500/20 text-white shrink-0">
+            <ChefHat size={24} className="sm:w-7 sm:h-7" />
           </div>
-          <div className="flex-1 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3" style={{ color: t.textPrimary }}>
+          <div className="flex-1 flex justify-between items-center min-w-0">
+            <div className="min-w-0 pr-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2 sm:gap-3 truncate" style={{ color: t.textPrimary }}>
                 Smart Kitchen
                 <button onClick={refreshRecipes} disabled={loading} className={`p-1 transition-colors ${loading ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'text-orange-400 hover:text-orange-500'}`}>
-                  <RotateCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                  <RotateCw className={`w-4 h-4 sm:w-5 sm:h-5 ${loading ? 'animate-spin' : ''}`} />
                 </button>
               </h1>
-              <p style={{ color: t.textSecondary }}>Personalized recipes based on your inventory</p>
+              <p className="text-xs sm:text-sm truncate" style={{ color: t.textSecondary }}>Personalized recipes based on your inventory</p>
             </div>
-            <button onClick={() => setShowHistoryModal(true)} className="p-2 transition-colors text-orange-400 hover:text-orange-500 relative bg-orange-500/10 hover:bg-orange-500/20 rounded-xl" title="Cooked History">
-              <History className="w-6 h-6" />
+            <button onClick={() => setShowHistoryModal(true)} className="p-2 transition-colors text-orange-400 hover:text-orange-500 relative bg-orange-500/10 hover:bg-orange-500/20 rounded-xl shrink-0" title="Cooked History">
+              <History className="w-5 h-5 sm:w-6 sm:h-6" />
               {cookedHistory.length > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                   {cookedHistory.length}
@@ -135,19 +135,19 @@ export default function Kitchen() {
               </button>
 
               <div
-                className="p-6 sm:p-8 rounded-3xl backdrop-blur-xl border relative overflow-hidden"
+                className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl backdrop-blur-xl border relative overflow-hidden"
                 style={{
                   background: t.cardBg,
                   borderColor: t.cardBorder,
                   boxShadow: t.cardShadow,
                 }}
               >
-                <h2 className="text-3xl font-bold mb-4" style={{ color: t.textPrimary }}>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4" style={{ color: t.textPrimary }}>
                   {selectedRecipe.title}
                 </h2>
                 
-                <div className="flex flex-wrap items-center gap-3 mb-8">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+                  <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
                     <Clock size={16} className="text-orange-500" /> {selectedRecipe.time}
                   </div>
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
@@ -227,27 +227,27 @@ export default function Kitchen() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
                             onClick={() => setSelectedRecipe(recipe)}
-                            className="group cursor-pointer p-6 rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
+                            className="group cursor-pointer p-4 sm:p-6 rounded-xl sm:rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
                             style={{
                               background: t.cardBg,
                               borderColor: t.cardBorder,
                               boxShadow: t.cardShadow,
                             }}
                           >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                              <h3 className="text-xl font-bold" style={{ color: t.textPrimary }}>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                              <h3 className="text-lg sm:text-xl font-bold" style={{ color: t.textPrimary }}>
                                 {recipe.title}
                               </h3>
-                              <div className="flex flex-wrap items-center gap-3">
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                  <Clock size={16} className="text-orange-500" /> {recipe.time}
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Clock size={15} className="text-orange-500" /> {recipe.time}
                                 </div>
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                  <Flame size={16} className="text-orange-500" /> {recipe.macros}
+                                <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Flame size={15} className="text-orange-500" /> {recipe.macros}
                                 </div>
                                 {recipe.globalCuisine && (
-                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                    <Globe size={16} className="text-orange-500" /> {recipe.globalCuisine}
+                                  <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                    <Globe size={15} className="text-orange-500" /> {recipe.globalCuisine}
                                   </div>
                                 )}
                               </div>
@@ -270,27 +270,27 @@ export default function Kitchen() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
                             onClick={() => setSelectedRecipe(recipe)}
-                            className="group cursor-pointer p-6 rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
+                            className="group cursor-pointer p-4 sm:p-6 rounded-xl sm:rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
                             style={{
                               background: t.cardBg,
                               borderColor: t.cardBorder,
                               boxShadow: t.cardShadow,
                             }}
                           >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                              <h3 className="text-xl font-bold" style={{ color: t.textPrimary }}>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                              <h3 className="text-lg sm:text-xl font-bold" style={{ color: t.textPrimary }}>
                                 {recipe.title}
                               </h3>
-                              <div className="flex flex-wrap items-center gap-3">
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                  <Clock size={16} className="text-orange-500" /> {recipe.time}
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Clock size={15} className="text-orange-500" /> {recipe.time}
                                 </div>
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                  <Flame size={16} className="text-orange-500" /> {recipe.macros}
+                                <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Flame size={15} className="text-orange-500" /> {recipe.macros}
                                 </div>
                                 {recipe.globalCuisine && (
-                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                    <Globe size={16} className="text-orange-500" /> {recipe.globalCuisine}
+                                  <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                    <Globe size={15} className="text-orange-500" /> {recipe.globalCuisine}
                                   </div>
                                 )}
                               </div>
@@ -313,27 +313,27 @@ export default function Kitchen() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
                             onClick={() => setSelectedRecipe(recipe)}
-                            className="group cursor-pointer p-6 rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
+                            className="group cursor-pointer p-4 sm:p-6 rounded-xl sm:rounded-2xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.01]"
                             style={{
                               background: t.cardBg,
                               borderColor: t.cardBorder,
                               boxShadow: t.cardShadow,
                             }}
                           >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                              <h3 className="text-xl font-bold" style={{ color: t.textPrimary }}>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                              <h3 className="text-lg sm:text-xl font-bold" style={{ color: t.textPrimary }}>
                                 {recipe.title}
                               </h3>
-                              <div className="flex flex-wrap items-center gap-3">
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                  <Clock size={16} className="text-orange-500" /> {recipe.time}
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Clock size={15} className="text-orange-500" /> {recipe.time}
                                 </div>
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                  <Flame size={16} className="text-orange-500" /> {recipe.macros}
+                                <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                  <Flame size={15} className="text-orange-500" /> {recipe.macros}
                                 </div>
                                 {recipe.globalCuisine && (
-                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
-                                    <Globe size={16} className="text-orange-500" /> {recipe.globalCuisine}
+                                  <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium" style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}>
+                                    <Globe size={15} className="text-orange-500" /> {recipe.globalCuisine}
                                   </div>
                                 )}
                               </div>

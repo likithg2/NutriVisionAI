@@ -12,7 +12,7 @@ import { getAvatarUrl } from "../utils/avatar.js";
 /* Helper components */
 function GlassCard({ children, className = "" }) {
   return (
-    <div className={`p-6 rounded-2xl glass transition-all ${className}`} style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+    <div className={`p-4 sm:p-6 rounded-2xl glass transition-all ${className}`} style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
       {children}
     </div>
   );
@@ -314,7 +314,7 @@ export default function Settings() {
           </div>
           
           <div className="flex justify-end pt-4">
-            <Button type="submit" loading={saving}>Save Profile</Button>
+            <Button type="submit" loading={saving} className="w-full sm:w-auto">Save Profile</Button>
           </div>
         </form>
       </GlassCard>
@@ -365,7 +365,7 @@ export default function Settings() {
           <Input label="New Password" type="password" value={pwdForm.newPassword} onChange={e => setPwdForm(p => ({ ...p, newPassword: e.target.value }))} required />
           <Input label="Confirm New Password" type="password" value={pwdForm.confirmPassword} onChange={e => setPwdForm(p => ({ ...p, confirmPassword: e.target.value }))} required />
           <div className="flex justify-end pt-2">
-            <Button type="submit" loading={saving}>Update Password</Button>
+            <Button type="submit" loading={saving} className="w-full sm:w-auto">Update Password</Button>
           </div>
         </form>
       </GlassCard>
@@ -376,12 +376,12 @@ export default function Settings() {
           <Shield className="w-4 h-4 text-red-400" />
           <h2 className="font-semibold text-sm text-red-400">Danger Zone</h2>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Delete Account</p>
             <p className="text-xs text-zinc-500 mt-0.5">Permanently delete your account and all data</p>
           </div>
-          <Button variant="danger" onClick={handleDeleteAccount}><LogOut className="w-3.5 h-3.5" /> Delete Profile</Button>
+          <Button variant="danger" onClick={handleDeleteAccount} className="w-full sm:w-auto"><LogOut className="w-3.5 h-3.5" /> Delete Profile</Button>
         </div>
       </GlassCard>
 

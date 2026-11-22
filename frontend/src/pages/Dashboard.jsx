@@ -55,16 +55,16 @@ const WEEKDAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 /* ───────────── KPI Card ───────────── */
 function KPICard({ icon: Icon, label, value, prefix, suffix, color, delay, subtext }) {
   return (
-    <GlassCard delay={delay} className="flex items-start gap-4 min-h-[96px]">
-      <div className={"w-11 h-11 rounded-xl flex items-center justify-center shrink-0 " + color}>
-        <Icon className="w-5 h-5" />
+    <GlassCard delay={delay} className="flex items-center sm:items-start gap-2.5 sm:gap-4 p-3.5 sm:p-5 min-h-[84px] sm:min-h-[96px]">
+      <div className={"w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 " + color}>
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mb-1 truncate">{label}</p>
-        <p className="text-2xl font-bold tabular-nums leading-none">
-          {prefix && <span className="text-sm font-semibold mr-0.5 text-zinc-400">{prefix}</span>}<AnimatedCounter value={value} />{suffix && <span className="text-sm font-semibold ml-0.5 text-zinc-400">{suffix}</span>}
+        <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium mb-1 truncate">{label}</p>
+        <p className="text-xl sm:text-2xl font-bold tabular-nums leading-none">
+          {prefix && <span className="text-xs sm:text-sm font-semibold mr-0.5 text-zinc-400">{prefix}</span>}<AnimatedCounter value={value} />{suffix && <span className="text-xs sm:text-sm font-semibold ml-0.5 text-zinc-400">{suffix}</span>}
         </p>
-        {subtext && <p className="text-xs text-zinc-400 mt-1.5 truncate">{subtext}</p>}
+        {subtext && <p className="text-[10px] sm:text-xs text-zinc-400 mt-1 truncate">{subtext}</p>}
       </div>
     </GlassCard>
   );
@@ -273,44 +273,46 @@ function InventoryGrid({ items }) {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl overflow-hidden ring-1 ring-white/10 dark:ring-white/5">
-        {/* Header */}
-        <div className="flex items-center px-4 py-2.5 text-xs font-semibold text-zinc-400 uppercase tracking-wider"
-          style={{ background: "rgba(255,255,255,0.03)" }}>
-          {cols.map(c => (
-            <button key={c.key} onClick={() => handleSort(c.key)}
-              className={"flex items-center gap-1 hover:text-zinc-200 transition-colors " + c.w}>
-              {c.label} <SortIcon col={c.key} />
-            </button>
-          ))}
-        </div>
+      <div className="rounded-xl overflow-hidden ring-1 ring-white/10 dark:ring-white/5 overflow-x-auto no-scrollbar">
+        <div className="min-w-[480px]">
+          {/* Header */}
+          <div className="flex items-center px-4 py-2.5 text-xs font-semibold text-zinc-400 uppercase tracking-wider"
+            style={{ background: "rgba(255,255,255,0.03)" }}>
+            {cols.map(c => (
+              <button key={c.key} onClick={() => handleSort(c.key)}
+                className={"flex items-center gap-1 hover:text-zinc-200 transition-colors " + c.w}>
+                {c.label} <SortIcon col={c.key} />
+              </button>
+            ))}
+          </div>
 
-        {/* Rows */}
-        <div className="divide-y divide-white/5">
-          {filtered.map((item, i) => {
-            const days = daysUntil(item.expiryDate);
-            const urg = urgencyColor(days);
-            return (
-              <motion.div key={item.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-                className="flex items-center px-4 py-3 text-sm transition-all duration-200 group cursor-default" 
-                style={{ background: urg.bg, boxShadow: "inset 0 0 0 0 rgba(255,107,74,0)" }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = "inset 0 0 40px rgba(255,107,74,0.04)"}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = "inset 0 0 0 0 rgba(255,107,74,0)"}>
-                <div className={"truncate font-medium flex items-center gap-2 " + cols[0].w}>
-                  <span className={"w-2 h-2 rounded-full shrink-0 " + urg.dot} />
-                  {item.name}
-                </div>
-                <div className={"capitalize text-zinc-400 text-xs " + cols[1].w}>{item.category || "—"}</div>
-                <div className={"text-zinc-400 text-xs tabular-nums " + cols[2].w}>{item.calories ? `${item.calories} kcal` : "—"}</div>
-                <div className={"text-zinc-400 text-xs tabular-nums " + cols[3].w}>{item.protein ? `${item.protein}g` : "—"}</div>
-                <div className={cols[4].w}><Badge color={statusColor[item.status] || "zinc"}>{item.status || "active"}</Badge></div>
-                <div className={cols[5].w + " " + urgencyColor(days).text + " text-xs font-medium"}>{urgencyLabel(days)}</div>
-              </motion.div>
-            );
-          })}
-          {filtered.length === 0 && (
-            <div className="text-center py-10 text-zinc-500 text-sm">No items match your filter.</div>
-          )}
+          {/* Rows */}
+          <div className="divide-y divide-white/5">
+            {filtered.map((item, i) => {
+              const days = daysUntil(item.expiryDate);
+              const urg = urgencyColor(days);
+              return (
+                <motion.div key={item.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+                  className="flex items-center px-4 py-3 text-sm transition-all duration-200 group cursor-default" 
+                  style={{ background: urg.bg, boxShadow: "inset 0 0 0 0 rgba(255,107,74,0)" }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = "inset 0 0 40px rgba(255,107,74,0.04)"}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = "inset 0 0 0 0 rgba(255,107,74,0)"}>
+                  <div className={"truncate font-medium flex items-center gap-2 " + cols[0].w}>
+                    <span className={"w-2 h-2 rounded-full shrink-0 " + urg.dot} />
+                    {item.name}
+                  </div>
+                  <div className={"capitalize text-zinc-400 text-xs " + cols[1].w}>{item.category || "—"}</div>
+                  <div className={"text-zinc-400 text-xs tabular-nums " + cols[2].w}>{item.calories ? `${item.calories} kcal` : "—"}</div>
+                  <div className={"text-zinc-400 text-xs tabular-nums " + cols[3].w}>{item.protein ? `${item.protein}g` : "—"}</div>
+                  <div className={cols[4].w}><Badge color={statusColor[item.status] || "zinc"}>{item.status || "active"}</Badge></div>
+                  <div className={cols[5].w + " " + urgencyColor(days).text + " text-xs font-medium"}>{urgencyLabel(days)}</div>
+                </motion.div>
+              );
+            })}
+            {filtered.length === 0 && (
+              <div className="text-center py-10 text-zinc-500 text-sm">No items match your filter.</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -432,7 +434,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ── KPI Row ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {kpis.map((k, i) => <KPICard key={k.label} {...k} delay={i * 0.06} />)}
       </div>
 

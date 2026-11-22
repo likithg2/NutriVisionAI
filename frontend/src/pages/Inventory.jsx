@@ -376,23 +376,25 @@ export default function Inventory() {
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="ghost" onClick={() => navigate("/kitchen")} className="gap-2 text-[#FF6B4A] hover:bg-orange-500/10">
-            <ChefHat className="w-4 h-4" /> Don't know what to cook? Click here
+            <ChefHat className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">Don't know what to cook? Click here</span>
+            <span className="sm:hidden">Recipe Ideas</span>
           </Button>
           <Button variant="ghost" onClick={() => setShopModalOpen(true)} className="gap-2">
-            <ShoppingCart className="w-4 h-4" /> Shopping
+            <ShoppingCart className="w-4 h-4 shrink-0" /> Shopping
           </Button>
-          <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add Item</Button>
+          <Button onClick={openAdd}><Plus className="w-4 h-4 shrink-0" /> Add Item</Button>
         </div>
       </div>
 
-      <GlassCard hover={false} className="flex flex-wrap items-center gap-3 p-3">
-        <div className="relative flex-1 min-w-48">
+      <GlassCard hover={false} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search items..." className="w-full glass rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-mint-500/40" />
         </div>
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-nowrap sm:flex-wrap pb-1 sm:pb-0">
           {["all","active","expired","consumed"].map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-all ${filter === f ? "bg-mint-500 text-white" : "glass text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100"}`}>{f}</button>
+            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize shrink-0 transition-all ${filter === f ? "bg-mint-500 text-white" : "glass text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100"}`}>{f}</button>
           ))}
         </div>
       </GlassCard>

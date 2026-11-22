@@ -283,24 +283,24 @@ export default function Login() {
       </div>
 
       {/* RIGHT PANEL (Auth Card) */}
-      <div className="w-full lg:w-[45%] lg:ml-auto flex flex-col justify-center items-center p-6 sm:p-12 py-24 lg:py-0 z-20 relative min-h-screen lg:min-h-0 overflow-y-auto">
+      <div className="w-full lg:w-[45%] lg:ml-auto flex flex-col justify-center items-center p-4 sm:p-12 py-14 sm:py-24 lg:py-0 z-20 relative min-h-screen lg:min-h-0 overflow-y-auto">
         <div className="w-full max-w-md relative z-10">
           
-          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="flex lg:hidden items-center gap-2.5 mb-8">
-            <img src="/custom-logo.png" alt="Logo" className="w-10 h-10 object-contain drop-shadow-md" />
-            <span className="font-semibold transition-colors duration-300" style={{ color: t.textPrimary }}>NutriVision<span style={{ color: "#FF6B4A" }}>Ai</span></span>
+          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="flex lg:hidden items-center gap-2.5 mb-6 sm:mb-8">
+            <img src="/custom-logo.png" alt="Logo" className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-md" />
+            <span className="font-semibold text-lg transition-colors duration-300" style={{ color: t.textPrimary }}>NutriVision<span style={{ color: "#FF6B4A" }}>Ai</span></span>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className={`rounded-3xl p-8 transition-all duration-700 ${t.cardBlur}`}
+            className={`rounded-2xl sm:rounded-3xl p-5 sm:p-8 transition-all duration-700 ${t.cardBlur}`}
             style={{ background: t.cardBg, border: t.cardBorder, boxShadow: t.cardShadow }}
           >
             {/* Header */}
-            <div className="mb-6">
+            <div className="mb-5 sm:mb-6">
               <AnimatePresence mode="wait">
                 <motion.div key={mode} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.2 }}>
-                  <h2 className="text-3xl font-bold tracking-tight transition-colors duration-500 flex items-center gap-3" style={{ color: t.textPrimary }}>
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight transition-colors duration-500 flex items-center gap-2.5 sm:gap-3" style={{ color: t.textPrimary }}>
                     {mode !== "login" && mode !== "register" && (
                       <button type="button" onClick={() => switchMode("login")} className="hover:opacity-70 transition-opacity">
                         <ArrowLeft className="w-5 h-5" />
@@ -343,15 +343,15 @@ export default function Login() {
                     <Field label="Full Name" placeholder="Jane Doe" icon={User} value={form.name} onChange={set("name")} required error={errors.name} autoComplete="name" />
                     <Field label="Email Address" type="email" placeholder="you@example.com" icon={Mail} value={form.identifier} onChange={set("identifier")} required error={errors.identifier} autoComplete="email" />
                     <Field label="Phone Number" type="tel" placeholder="+1234567890" icon={Phone} value={form.phone} onChange={set("phone")} required error={errors.phone} autoComplete="tel" />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                       <Field label="Age" type="number" placeholder="25" icon={Calendar} value={form.age} onChange={set("age")} />
                       <Field label="Height (cm)" type="number" placeholder="170" icon={Ruler} value={form.height} onChange={set("height")} />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                       <Field label="Weight (kg)" type="number" placeholder="65" icon={Scale} value={form.weight} onChange={set("weight")} />
                       <Field label="Gender" type="select" placeholder="Select" icon={User} value={form.gender} onChange={set("gender")} options={[{label:'Male',value:'male'},{label:'Female',value:'female'},{label:'Other',value:'other'}]} />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                       <Field label="Activity Level" type="select" placeholder="Select" icon={Activity} value={form.activityLevel} onChange={set("activityLevel")} options={[{label:'Sedentary',value:'sedentary'},{label:'Lightly Active',value:'light'},{label:'Moderately Active',value:'moderate'},{label:'Very Active',value:'active'},{label:'Extra Active',value:'very_active'}]} />
                       <Field label="Goal" type="select" placeholder="Select your goal" icon={Target} value={form.goal} onChange={set("goal")} options={[{label:'Lose Weight',value:'lose'},{label:'Maintain',value:'maintain'},{label:'Gain Muscle/Weight',value:'gain'}]} />
                     </div>

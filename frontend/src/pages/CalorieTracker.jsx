@@ -394,16 +394,16 @@ export default function CalorieTracker() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>Calorie Tracker</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 mt-1">Log your meals and hit your goals</p>
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>Calorie Tracker</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Log your meals and hit your goals</p>
           
-          <div className="flex items-center gap-4 mt-3">
+          <div className="flex items-center gap-3 sm:gap-4 mt-3">
             <div className="flex items-center glass rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-1">
               <button onClick={() => changeDate(-1)} className="p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <div className="flex items-center gap-2 px-3 font-medium min-w-[120px] justify-center text-sm">
-                <CalendarIcon className="w-4 h-4 opacity-50" />
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 font-medium min-w-[100px] sm:min-w-[120px] justify-center text-xs sm:text-sm">
+                <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-50" />
                 {formatDisplayDate(currentDate)}
               </div>
               <button 
@@ -422,10 +422,10 @@ export default function CalorieTracker() {
           </div>
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <button onClick={() => setShowScanModal(true)} disabled={scanning} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-white rounded-xl font-medium transition-colors shadow-lg" style={{ background: dark ? "rgba(255,255,255,0.1)" : "#1A1210" }}>
+          <button onClick={() => setShowScanModal(true)} disabled={scanning} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-white rounded-xl text-sm font-medium transition-colors shadow-lg" style={{ background: dark ? "rgba(255,255,255,0.1)" : "#1A1210" }}>
             {scanning ? <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> : <Camera className="w-4 h-4" />} Scan Meal
           </button>
-          <button onClick={() => setShowLogModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#FF6B4A] text-white rounded-xl font-medium hover:bg-[#E85A3A] transition-colors shadow-lg">
+          <button onClick={() => setShowLogModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-[#FF6B4A] text-white rounded-xl text-sm font-medium hover:bg-[#E85A3A] transition-colors shadow-lg">
             <Plus className="w-4 h-4" /> Log Meal
           </button>
           <input type="file" ref={fileInputRef} onChange={(e) => { setShowScanModal(false); void handleScan(e); }} accept="image/*" className="hidden" />
@@ -434,59 +434,59 @@ export default function CalorieTracker() {
       </motion.div>
 
       {/* Main Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         
         {/* Calories Circle */}
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="col-span-1 glass p-6 rounded-3xl flex flex-col items-center justify-center relative">
-          <h2 className="text-lg font-semibold mb-6 w-full text-center" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Daily Calories</h2>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="col-span-1 glass p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center relative">
+          <h2 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 w-full text-center" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Daily Calories</h2>
           
-          <div className="relative w-48 h-48">
+          <div className="relative w-40 h-40 sm:w-48 sm:h-48">
             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="96" cy="96" r="88" stroke={dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"} strokeWidth="12" fill="none" />
+              <circle cx="50%" cy="50%" r="42%" stroke={dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"} strokeWidth="10" fill="none" />
               <motion.circle 
                 initial={{ strokeDasharray: "0, 1000" }}
-                animate={{ strokeDasharray: `${(calsPercent / 100) * 553}, 1000` }}
+                animate={{ strokeDasharray: `${(calsPercent / 100) * 520}, 1000` }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
-                cx="96" cy="96" r="88" 
+                cx="50%" cy="50%" r="42%" 
                 stroke="#FF6B4A" 
-                strokeWidth="12" 
+                strokeWidth="10" 
                 fill="none" 
                 strokeLinecap="round" 
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <Flame className="w-6 h-6 text-[#FF6B4A] mb-1" />
-              <span className="text-3xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.max(goals.calories - consumed.calories, 0)}</span>
-              <span className="text-xs" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Remaining</span>
+              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#FF6B4A] mb-0.5 sm:mb-1" />
+              <span className="text-2xl sm:text-3xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.max(goals.calories - consumed.calories, 0)}</span>
+              <span className="text-[11px] sm:text-xs" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Remaining</span>
             </div>
           </div>
           
-          <div className="flex justify-between w-full mt-6 px-4 text-sm font-medium" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>
+          <div className="flex justify-between w-full mt-4 sm:mt-6 px-2 sm:px-4 text-xs sm:text-sm font-medium" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>
             <span>{consumed.calories} Consumed</span>
             <span>{goals.calories} Goal</span>
           </div>
         </motion.div>
 
         {/* Macros */}
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="col-span-1 glass p-6 rounded-3xl flex flex-col items-center justify-center relative">
-          <h2 className="text-lg font-semibold mb-2 w-full text-center" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Macro Split</h2>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="col-span-1 glass p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center relative">
+          <h2 className="text-base sm:text-lg font-semibold mb-2 w-full text-center" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>Macro Split</h2>
           <MacroChart protein={consumed.protein} carbs={consumed.carbs} fat={consumed.fat} dark={dark} />
         </motion.div>
         
-        <div className="col-span-1 lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="col-span-1 lg:col-span-2 grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4">
           {macros.map((m, i) => {
             const pct = (m.value / m.goal) * 100 || 0;
             return (
-              <motion.div key={m.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className={`glass p-5 rounded-3xl flex flex-col justify-between ${pct > 100 ? 'ring-1 ring-red-500/40' : ''}`}>
+              <motion.div key={m.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className={`glass p-3 sm:p-5 rounded-2xl sm:rounded-3xl flex flex-col justify-between ${pct > 100 ? 'ring-1 ring-red-500/40' : ''}`}>
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-semibold" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>{m.label}</span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md text-white`} style={{ background: pct > 100 ? '#ef4444' : m.color }}>{Math.round(pct)}%</span>
+                    <span className="font-semibold text-xs sm:text-base" style={{ color: dark ? '#E5D5C5' : '#4A4542' }}>{m.label}</span>
+                    <span className={`text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-md text-white`} style={{ background: pct > 100 ? '#ef4444' : m.color }}>{Math.round(pct)}%</span>
                   </div>
-                  <span className="text-xs" style={{ color: pct > 100 ? '#ef4444' : (dark ? '#C9B8AE' : '#6B6560') }}>{m.value}g / {m.goal}g{pct > 100 ? ' ⚠️' : ''}</span>
+                  <span className="text-[11px] sm:text-xs" style={{ color: pct > 100 ? '#ef4444' : (dark ? '#C9B8AE' : '#6B6560') }}>{m.value}g / {m.goal}g{pct > 100 ? ' ⚠️' : ''}</span>
                 </div>
                 
-                <div className="w-full h-3 rounded-full mt-4 overflow-hidden" style={{ background: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)" }}>
+                <div className="w-full h-2.5 sm:h-3 rounded-full mt-3 sm:mt-4 overflow-hidden" style={{ background: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)" }}>
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(pct, 100)}%` }}
@@ -500,7 +500,7 @@ export default function CalorieTracker() {
           })}
 
           {/* AI Suggestion Card */}
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="col-span-1 sm:col-span-3 glass p-6 rounded-3xl relative overflow-hidden group">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="col-span-3 glass p-4 sm:p-6 rounded-2xl sm:rounded-3xl relative overflow-hidden group">
             <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#FF6B4A]/10 rounded-full blur-3xl group-hover:bg-[#FF6B4A]/20 transition-colors" />
             
             <div className="flex justify-between items-start mb-4 relative z-10">

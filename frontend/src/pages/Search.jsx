@@ -82,7 +82,7 @@ export default function SearchPage() {
         </div>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="glass p-6 sm:p-8 rounded-3xl min-h-[60vh] flex flex-col relative overflow-hidden">
+      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="glass p-4 sm:p-8 rounded-2xl sm:rounded-3xl min-h-[60vh] flex flex-col relative overflow-hidden">
         
         {!selectedFood ? (
           <>
@@ -90,10 +90,10 @@ export default function SearchPage() {
               <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
               <input
                 type="text"
-                placeholder="Ask anything — 'What's expiring?', 'What can I make?', or search foods..."
+                placeholder="Ask anything — 'What's expiring?', or search..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full glass border border-zinc-200 dark:border-zinc-800 rounded-2xl pl-12 pr-4 py-4 outline-none focus:border-[#FF6B4A] transition-colors text-base shadow-sm"
+                className="w-full glass border border-zinc-200 dark:border-zinc-800 rounded-2xl pl-11 sm:pl-12 pr-4 py-3.5 sm:py-4 outline-none focus:border-[#FF6B4A] transition-colors text-sm sm:text-base shadow-sm"
                 style={{ color: dark ? '#FDF6F0' : '#1A1210', background: dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)" }}
               />
               {loading && (
@@ -219,32 +219,32 @@ export default function SearchPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-5 rounded-2xl shadow-sm border border-zinc-200/50 dark:border-zinc-800/50" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.8)" }}>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="p-4 sm:p-5 rounded-2xl shadow-sm border border-zinc-200/50 dark:border-zinc-800/50" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.8)" }}>
                       <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Calories</p>
-                      <p className="text-3xl font-bold mt-2 text-[#FF6B4A]">{Math.round(selectedFood.calories)} <span className="text-sm font-normal" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>kcal</span></p>
+                      <p className="text-2xl sm:text-3xl font-bold mt-2 text-[#FF6B4A]">{Math.round(selectedFood.calories)} <span className="text-xs sm:text-sm font-normal" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>kcal</span></p>
                     </div>
-                    <div className="p-5 rounded-2xl shadow-sm border border-zinc-200/50 dark:border-zinc-800/50" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.8)" }}>
+                    <div className="p-4 sm:p-5 rounded-2xl shadow-sm border border-zinc-200/50 dark:border-zinc-800/50" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.8)" }}>
                       <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Serving Size</p>
-                      <p className="text-xl font-medium mt-3" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{selectedFood.servingSize}</p>
+                      <p className="text-lg sm:text-xl font-medium mt-2 sm:mt-3 line-clamp-1" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{selectedFood.servingSize}</p>
                     </div>
                   </div>
 
                   <div className="rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 overflow-hidden shadow-sm" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.8)" }}>
-                    <div className="px-5 py-3 border-b border-zinc-200/50 dark:border-zinc-800/50" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}>
+                    <div className="px-4 sm:px-5 py-3 border-b border-zinc-200/50 dark:border-zinc-800/50" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}>
                       <h4 className="text-sm font-semibold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>Macros</h4>
                     </div>
-                    <div className="p-5 grid grid-cols-3 gap-4 text-center">
+                    <div className="p-4 sm:p-5 grid grid-cols-3 gap-2 sm:gap-4 text-center">
                       <div>
-                        <p className="text-2xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.round(selectedFood.protein)}g</p>
+                        <p className="text-xl sm:text-2xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.round(selectedFood.protein)}g</p>
                         <p className="text-xs mt-1 font-medium" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Protein</p>
                       </div>
                       <div className="border-x border-zinc-100 dark:border-zinc-800">
-                        <p className="text-2xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.round(selectedFood.carbohydrates)}g</p>
+                        <p className="text-xl sm:text-2xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.round(selectedFood.carbohydrates)}g</p>
                         <p className="text-xs mt-1 font-medium" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Carbs</p>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.round(selectedFood.fat)}g</p>
+                        <p className="text-xl sm:text-2xl font-bold" style={{ color: dark ? '#FDF6F0' : '#1A1210' }}>{Math.round(selectedFood.fat)}g</p>
                         <p className="text-xs mt-1 font-medium" style={{ color: dark ? '#C9B8AE' : '#6B6560' }}>Fat</p>
                       </div>
                     </div>

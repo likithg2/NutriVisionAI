@@ -43,12 +43,12 @@ export default function Home() {
 
 
   return (
-    <div className="h-screen overflow-hidden bg-[#FDF8F3] dark:bg-[#110A08]">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden overflow-y-auto bg-[#FDF8F3] dark:bg-[#110A08]">
 
       {/* ═════════════════════════════════════════════
           SECTION 1 — HERO
           ═════════════════════════════════════════════ */}
-      <section className="relative h-full w-full flex items-center overflow-hidden">
+      <section className="relative min-h-screen lg:h-full w-full flex items-center overflow-hidden py-16 lg:py-0">
         {/* Hero BG images — crossfade */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           <img src="/lightlandingpage.png" alt="" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out" style={{ opacity: dark ? 0 : 1, filter: "saturate(1.3) contrast(1.1)" }} />
@@ -73,16 +73,16 @@ export default function Home() {
       </div>
 
       {/* Hero Content — RIGHT-ALIGNED, asymmetric */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex justify-end">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-10 lg:px-16 flex justify-end">
           <motion.div 
-            className="max-w-2xl"
+            className="max-w-2xl w-full"
             initial={{ opacity: 1, x: 0 }}
             animate={isExiting ? { opacity: 0, x: -800 } : { opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: "easeInOut" }}
           >
             {/* Tagline pill */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6 sm:mb-8"
               style={{ background: t.pillBg, border: t.pillBorder }}
             >
               <Leaf className="w-4 h-4" style={{ color: "#FF6B4A" }} />
@@ -91,7 +91,7 @@ export default function Home() {
 
             {/* Headline */}
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}
-              className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[1.05] tracking-tight mb-6"
+              className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[1.08] tracking-tight mb-4 sm:mb-6"
               style={{ color: t.textPrimary }}
             >
               Eat smart.<br />
@@ -100,7 +100,7 @@ export default function Home() {
 
             {/* Subhead */}
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.25 }}
-              className="text-lg sm:text-xl leading-relaxed mb-10 max-w-lg"
+              className="text-base sm:text-xl leading-relaxed mb-8 sm:mb-10 max-w-lg"
               style={{ color: t.textSecondary }}
             >
               Your food inventory, nutrition insights, and AI-powered kitchen assistant — all synced and ready the moment you sign in.
@@ -108,20 +108,20 @@ export default function Home() {
 
             {/* CTAs */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35 }}
-              className="flex flex-col sm:flex-row items-start gap-4 mb-14"
+              className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 sm:gap-4 mb-8 sm:mb-14"
             >
               {!user ? (
                 <>
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => handleNavigate("/login", { mode: "register" })}
-                    className="flex items-center gap-2.5 px-8 py-4 rounded-full text-white font-bold text-base shadow-xl transition-all"
+                    className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full text-white font-bold text-base shadow-xl transition-all"
                     style={{ background: "linear-gradient(135deg, #FF7A45, #FF4D6D)", boxShadow: "0 8px 32px rgba(255,107,74,0.35)" }}
                   >
                     Sign Up Now <ArrowRight className="w-5 h-5" />
                   </motion.button>
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => handleNavigate("/login", { mode: "login" })}
-                    className="flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base transition-all"
+                    className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-bold text-base transition-all"
                     style={{ color: "#FF6B4A", border: "2px solid rgba(255,107,74,0.3)", background: dark ? "rgba(255,107,74,0.05)" : "rgba(255,107,74,0.04)" }}
                   >
                     Login <LogIn className="w-4 h-4 ml-1" />
@@ -131,14 +131,14 @@ export default function Home() {
                 <>
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => handleNavigate("/dashboard")}
-                    className="flex items-center gap-2.5 px-8 py-4 rounded-full text-white font-bold text-base shadow-xl transition-all"
+                    className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full text-white font-bold text-base shadow-xl transition-all"
                     style={{ background: "linear-gradient(135deg, #FF7A45, #FF4D6D)", boxShadow: "0 8px 32px rgba(255,107,74,0.35)" }}
                   >
                     Dashboard <LayoutDashboard className="w-5 h-5" />
                   </motion.button>
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => handleNavigate("/inventory")}
-                    className="flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base transition-all"
+                    className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-bold text-base transition-all"
                     style={{ color: "#FF6B4A", border: "2px solid rgba(255,107,74,0.3)", background: dark ? "rgba(255,107,74,0.05)" : "rgba(255,107,74,0.04)" }}
                   >
                     Inventory <LayoutList className="w-4 h-4 ml-1" />
@@ -149,7 +149,7 @@ export default function Home() {
 
             {/* Pill Badges */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.45 }}
-              className="flex flex-wrap gap-3 mb-10"
+              className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-10"
             >
               {[
                 { icon: MessageSquare, label: "AI Chatbot" },
@@ -157,18 +157,18 @@ export default function Home() {
                 { icon: Clock, label: "Activity Tracking" },
               ].map(({ icon: Icon, label }) => (
                 <motion.div key={label} whileHover={{ scale: 1.08, y: -2 }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 cursor-default"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 cursor-default"
                   style={{ background: t.pillBg, border: t.pillBorder, color: t.textPrimary }}
                 >
-                  <Icon className="w-4 h-4" style={{ color: "#FF6B4A" }} />
-                  <span className="text-xs font-semibold">{label}</span>
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: "#FF6B4A" }} />
+                  <span className="text-[11px] sm:text-xs font-semibold">{label}</span>
                 </motion.div>
               ))}
             </motion.div>
 
             {/* Stat Cards */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.55 }}
-              className="flex flex-wrap gap-4"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full"
             >
               {[
                 { icon: Target, value: "500+", label: "Recipes Suggested" },
@@ -176,7 +176,7 @@ export default function Home() {
                 { icon: Leaf, value: "30%", label: "Avg. Waste Reduced" },
               ].map(({ icon: Icon, value, label }) => (
                 <motion.div key={label} whileHover={{ scale: 1.05, y: -2 }}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl transition-all duration-300 cursor-default flex-1 whitespace-nowrap min-w-[140px]"
+                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl transition-all duration-300 cursor-default w-full"
                   style={{ background: t.pillBg, border: dark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(255,255,255,0.4)", boxShadow: dark ? "none" : "0 8px 32px rgba(0,0,0,0.04)" }}
                 >
                   <div>

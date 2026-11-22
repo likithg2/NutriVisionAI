@@ -40,7 +40,7 @@ function Message({ msg, isTypingEffect = false }) {
         <img src="/custom-logo.png" alt="AI Avatar" className="w-8 h-8 rounded-xl shrink-0 mt-0.5 object-cover drop-shadow-md" />
       )}
       {/* Bubble */}
-      <div className={`max-w-[78%] px-4 py-3 text-sm leading-relaxed ${
+      <div className={`max-w-[88%] sm:max-w-[78%] px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm leading-relaxed ${
         isUser
           ? "rounded-2xl rounded-tr-sm text-white"
           : "rounded-2xl rounded-tl-sm glass"
@@ -145,21 +145,21 @@ export default function ChatBot() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-9.5rem)] -mb-14 p-4 sm:p-6 rounded-3xl">
+    <div className="flex flex-col h-[calc(100dvh-10.5rem)] sm:h-[calc(100vh-9.5rem)] -mb-8 sm:-mb-14 p-2 sm:p-6 rounded-2xl sm:rounded-3xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 shrink-0">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold">ChatBot</h1>
-          <p className="text-sm text-black dark:text-white mt-0.5">AI-powered nutrition assistant</p>
+          <h1 className="text-xl sm:text-2xl font-bold">ChatBot</h1>
+          <p className="text-xs sm:text-sm text-black dark:text-white mt-0.5">AI-powered nutrition assistant</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <button onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white glass px-3 py-2 rounded-xl transition-all">
-            <History className="w-3.5 h-3.5" /> History
+            className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white glass px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all">
+            <History className="w-3.5 h-3.5" /> <span className="hidden sm:inline">History</span>
           </button>
           <button onClick={newChat}
-            className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white glass px-3 py-2 rounded-xl transition-all">
-            <PlusCircle className="w-3.5 h-3.5" /> New Chat
+            className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white glass px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all">
+            <PlusCircle className="w-3.5 h-3.5" /> <span className="hidden sm:inline">New Chat</span>
           </button>
         </div>
       </div>
@@ -193,10 +193,10 @@ export default function ChatBot() {
       <AnimatePresence>
         {messages.length <= 1 && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
-            className="flex gap-2 flex-wrap py-3 shrink-0">
+            className="flex gap-2 overflow-x-auto no-scrollbar flex-nowrap sm:flex-wrap py-2 shrink-0">
             {SUGGESTIONS.map(s => (
               <button key={s} onClick={() => void send(s)}
-                className="glass px-3 py-2 rounded-xl text-xs text-black dark:text-white hover:text-mint-400 hover:border-mint-500/20 transition-all text-left">{s}</button>
+                className="glass px-3 py-1.5 sm:py-2 rounded-xl text-xs text-black dark:text-white shrink-0 hover:text-mint-400 hover:border-mint-500/20 transition-all text-left whitespace-nowrap">{s}</button>
             ))}
           </motion.div>
         )}

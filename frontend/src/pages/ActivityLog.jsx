@@ -89,10 +89,10 @@ export default function ActivityLog() {
       </motion.div>
 
       {/* Filter chips */}
-      <GlassCard hover={false} className="flex flex-wrap gap-2 p-3">
+      <GlassCard hover={false} className="flex overflow-x-auto no-scrollbar flex-nowrap sm:flex-wrap items-center gap-2 p-2.5 sm:p-3">
         {FILTERS.map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => setFilter(key)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-medium shrink-0 transition-all ${
               filter === key
                 ? "bg-mint-500 text-white shadow-mint-glow/30"
                 : "glass text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100"
@@ -101,7 +101,7 @@ export default function ActivityLog() {
           </button>
         ))}
         {filter !== "all" && (
-          <span className="text-xs text-zinc-400 flex items-center ml-2">
+          <span className="text-xs text-zinc-400 flex items-center ml-2 shrink-0">
             Showing {filtered.length} of {logs.length}
           </span>
         )}
@@ -125,9 +125,9 @@ export default function ActivityLog() {
               </div>
 
               {/* Timeline */}
-              <div className="relative pl-8">
+              <div className="relative pl-6 sm:pl-8">
                 {/* Vertical line */}
-                <div className="absolute left-[15px] top-2 bottom-2 w-px bg-gradient-to-b from-mint-400/40 via-mint-400/15 to-transparent" />
+                <div className="absolute left-[11px] sm:left-[15px] top-2 bottom-2 w-px bg-gradient-to-b from-mint-400/40 via-mint-400/15 to-transparent" />
 
                 <div className="space-y-3">
                   {entries.map((log, i) => {
@@ -137,16 +137,16 @@ export default function ActivityLog() {
                       <motion.div key={log.id || `${day}-${i}`}
                         initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.03, duration: 0.3 }}
-                        className="relative flex items-start gap-4">
+                        className="relative flex items-start gap-3 sm:gap-4">
 
                         {/* Timeline dot */}
-                        <div className={"absolute -left-8 w-[30px] h-[30px] rounded-xl flex items-center justify-center ring-2 z-10 " + cfg.bg}>
-                          <Icon className={"w-3.5 h-3.5 " + cfg.color} />
+                        <div className={"absolute -left-6 sm:-left-8 w-6 h-6 sm:w-[30px] sm:h-[30px] rounded-lg sm:rounded-xl flex items-center justify-center ring-2 z-10 " + cfg.bg}>
+                          <Icon className={"w-3 h-3 sm:w-3.5 sm:h-3.5 " + cfg.color} />
                         </div>
 
                         {/* Card */}
                         <div 
-                          className="flex-1 rounded-xl p-4 transition-all glass cursor-pointer hover:shadow-lg hover:scale-[1.01]"
+                          className="flex-1 rounded-xl p-3 sm:p-4 transition-all glass cursor-pointer hover:shadow-lg hover:scale-[1.01]"
                           onClick={() => setSelectedLog(log)}
                           role="button"
                           tabIndex={0}

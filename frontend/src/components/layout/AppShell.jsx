@@ -42,7 +42,7 @@ export default function AppShell() {
       {/* PillNavbar is fixed to the top and persists across route changes */}
       <PillNavbar />
       
-      <main className="min-h-screen pt-28 pb-24 px-4 md:px-6 transition-all duration-300 ease-out z-10 relative">
+      <main className="min-h-screen pt-24 sm:pt-28 pb-20 sm:pb-24 px-3 sm:px-4 md:px-6 transition-all duration-300 ease-out z-10 relative">
         <AnimatePresence mode="wait">
           <Outlet />
         </AnimatePresence>
@@ -54,19 +54,19 @@ export default function AppShell() {
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
-          className="fixed bottom-6 right-6 z-50"
+          className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50"
         >
           <Link to="/chat">
             <motion.div
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
-              className="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl relative"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-2xl relative"
               style={{
                 background: "linear-gradient(135deg, #FF7A45, #FF4D6D)",
                 boxShadow: "0 8px 32px rgba(255,107,74,0.4)"
               }}
             >
-              <MessageSquare className="w-6 h-6 text-white" />
+              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               {/* Pulse ring */}
               <div className="absolute inset-0 rounded-full border border-[#FF6B4A] animate-ping opacity-30" />
             </motion.div>
