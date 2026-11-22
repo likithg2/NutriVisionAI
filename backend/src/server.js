@@ -31,7 +31,7 @@ import { initCronJobs } from './utils/cronJobs.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 app.disable('x-powered-by');
@@ -50,12 +50,17 @@ app.use((req, res, next) => {
 });
 
 /** CORS */
+// In production, set FRONTEND_URL env var to your deployed frontend URL.
+// Multiple origins can be comma-separated: "https://app.example.com,https://www.example.com"
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
+  ...( process.env.FRONTEND_URL
+        ? process.env.FRONTEND_URL.split(',').map(u => u.trim())
+        : [] ),
+  // Always allow local dev origins
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173'
 ].filter(Boolean);
 
 app.use(
