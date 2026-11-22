@@ -4,7 +4,6 @@ import path from 'path'
 import User from '../models/User.js'
 import Activity from '../models/Activity.js'
 import { notifyUser } from '../utils/notify.js'
-import { otpStore } from './authController.js'
 
 /**
  * GET /api/users/me
@@ -293,25 +292,15 @@ export async function testNotification(req, res, next) {
 
 /**
  * DELETE /api/users/me
- * Deletes the user account and associated data
+ * Deletes the authenticated user account and associated data
  */
 export async function deleteAccount(req, res, next) {
   try {
     const id = req.user?.id || req.user?._id;
     if (!id) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { otp } = req.body;
-    if (!otp) return res.status(400).json({ error: 'OTP is required to delete account' });
-
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const stored = otpStore.get(user.email.toLowerCase());
-    if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
-      return res.status(401).json({ error: 'Invalid or expired OTP' });
-    }
-
-    otpStore.delete(user.email.toLowerCase());
 
     // Delete related records manually to prevent FK constraint errors
     try {

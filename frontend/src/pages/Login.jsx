@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2, Leaf, Zap, Shield, Search, Goal, Target, Activity, Moon, Sun, Phone, Scale, Ruler, Calendar, ArrowLeft, MapPin } from "lucide-react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2, Leaf, Zap, Search, Target, Activity, Moon, Sun, Phone, Scale, Ruler, Calendar, ArrowLeft, MapPin } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { login as apiLogin, signup as apiSignup, requestOtp, loginOtp, forgotPassword, resetPassword } from "../api/auth.js";
+import { login as apiLogin, signup as apiSignup, resetPassword } from "../api/auth.js";
 import { useTheme } from "../context/ThemeContext.jsx";
 
 /* ─── UTILS ─── */
@@ -108,17 +108,6 @@ function Badge({ icon: Icon, label }) {
   );
 }
 
-// Timer hook for Resend OTP
-function useCountdown(initialSeconds) {
-  const [seconds, setSeconds] = useState(initialSeconds);
-  useEffect(() => {
-    if (seconds <= 0) return;
-    const interval = setInterval(() => setSeconds(s => s - 1), 1000);
-    return () => clearInterval(interval);
-  }, [seconds]);
-  return [seconds, setSeconds];
-}
-
 /* ─── MAIN COMPONENT ─── */
 export default function Login() {
   const { login: setAuth } = useAuth();
@@ -126,12 +115,12 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Modes: "login", "register", "register-otp", "login-otp-req", "login-otp-ver", "forgot-password", "reset-password"
+  // Modes: "login", "register", "forgot-password"
   const [mode, setMode] = useState(location.state?.mode || "login");
   
   const [form, setForm] = useState({ 
     name: "", identifier: "", password: "", confirm: "", 
-    phone: "", age: "", height: "", weight: "", gender: "", goal: "", activityLevel: "", district: "", otp: "" 
+    phone: "", age: "", height: "", weight: "", gender: "", goal: "", activityLevel: "", district: "" 
   });
   
   const [errors, setErrors] = useState({});
@@ -139,7 +128,6 @@ export default function Login() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [showShake, setShowShake] = useState(false);
-  const [timer, setTimer] = useCountdown(0);
 
   const set = key => e => setForm(f => ({ ...f, [key]: e.target.value }));
   
@@ -153,38 +141,15 @@ export default function Login() {
       if (form.password !== form.confirm) e.confirm = "Passwords don't match";
     }
     if (mode === "login") {
-      if (!form.identifier.trim()) e.identifier = "Identifier required";
+      if (!form.identifier.trim()) e.identifier = "Email or Phone required";
       if (!form.password) e.password = "Password required";
     }
-    if (mode === "login-otp-req" || mode === "forgot-password") {
+    if (mode === "forgot-password") {
       if (!form.identifier.trim()) e.identifier = "Email or Phone required";
-    }
-    if (mode === "reset-password") {
-      if (!form.otp.trim()) e.otp = "OTP required";
       if (form.password.length < 6) e.password = "At least 6 characters";
+      if (form.password !== form.confirm) e.confirm = "Passwords don't match";
     }
     setErrors(e); return Object.keys(e).length === 0;
-  };
-
-  const handleRequestOtp = async (actionType) => {
-    setLoading(true); setApiError(""); setSuccess("");
-    try {
-      const idToUse = form.identifier;
-      const res = await requestOtp(idToUse, actionType);
-      if (res.data?.otp) {
-        setForm(f => ({ ...f, otp: res.data.otp }));
-      }
-      setSuccess("OTP generated successfully!");
-      setTimer(90); // 1.5 minutes
-      if (actionType === "signup") setMode("register-otp");
-      else if (actionType === "login") setMode("login-otp-ver");
-      else if (actionType === "reset") setMode("reset-password");
-    } catch (err) {
-      setApiError(err.response?.data?.error || "Failed to generate OTP");
-      setShowShake(true); setTimeout(() => setShowShake(false), 500);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleSubmit = async e => {
@@ -204,29 +169,10 @@ export default function Login() {
         const res = await apiSignup(payload);
         finishAuth(res.data, "Account created!");
       }
-      else if (mode === "register-otp") {
-        const payload = {
-          name: form.name, email: form.identifier, password: form.password, phone: form.phone,
-          age: form.age, height: form.height, weight: form.weight, gender: form.gender, goal: form.goal, activityLevel: form.activityLevel, district: form.district,
-          otp: form.otp
-        };
-        const res = await apiSignup(payload);
-        finishAuth(res.data, "Account created!");
-      }
-      else if (mode === "login-otp-req") {
-        await handleRequestOtp("login");
-      }
-      else if (mode === "login-otp-ver") {
-        const res = await loginOtp(form.identifier, form.otp);
-        finishAuth(res.data, "Logged in successfully!");
-      }
       else if (mode === "forgot-password") {
-        await handleRequestOtp("reset");
-      }
-      else if (mode === "reset-password") {
-        const res = await resetPassword(form.identifier, form.otp, form.password);
-        setSuccess("Password updated! You can now log in.");
-        setTimeout(() => switchMode("login"), 2000);
+        await resetPassword(form.identifier, form.password);
+        setSuccess("Password reset successfully! You can now log in.");
+        setTimeout(() => switchMode("login"), 1500);
       }
     } catch (err) {
       setApiError(err.response?.data?.message || err.response?.data?.error || err.message || "Something went wrong");
@@ -250,7 +196,7 @@ export default function Login() {
     setErrors({}); setApiError(""); setSuccess(""); 
   };
   
-  const dir = mode.includes("register") ? 1 : -1;
+  const dir = mode === "register" ? 1 : -1;
 
   // Dynamic Theme Tokens
   const t = {
@@ -320,7 +266,7 @@ export default function Login() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="flex flex-wrap gap-3 mb-16">
             <Badge icon={Zap} label="AI Food Scanner" />
             <Badge icon={Search} label="Smart Search" />
-            <Badge icon={Shield} label="Expiry Alerts" />
+            <Badge icon={Leaf} label="Zero Waste" />
           </motion.div>
 
           {/* Bottom Stats */}
@@ -363,13 +309,11 @@ export default function Login() {
                     {mode === "login" && "Welcome back"}
                     {mode === "register" && "Create account"}
                     {mode === "forgot-password" && "Reset Password"}
-                    {mode.includes("otp") && "Verify OTP"}
                   </h2>
                   <p className="text-sm mt-1 transition-colors duration-500" style={{ color: t.textSecondary }}>
                     {mode === "login" && "Sign in to continue to your dashboard"}
                     {mode === "register" && "Start tracking your nutrition today"}
-                    {mode === "forgot-password" && "Enter your email or phone to reset your password"}
-                    {mode.includes("otp") && "Enter your 6-digit verification code."}
+                    {mode === "forgot-password" && "Enter your email or phone and choose a new password"}
                   </p>
                 </motion.div>
               </AnimatePresence>
@@ -422,36 +366,18 @@ export default function Login() {
                     <Field label="Email or Phone Number" type="text" placeholder="you@example.com or phone" icon={Mail} value={form.identifier} onChange={set("identifier")} required error={errors.identifier} autoComplete="username" />
                     <Field label="Password" type="password" placeholder="••••••••" icon={Lock} value={form.password} onChange={set("password")} required error={errors.password} autoComplete="current-password" />
                     
-                    <div className="flex justify-between items-center text-xs mt-2" style={{ color: t.textSecondary }}>
-                      <button type="button" onClick={() => switchMode("login-otp-req")} className="hover:text-[#FF6B4A] transition-colors">Login with OTP</button>
+                    <div className="flex justify-end text-xs mt-2" style={{ color: t.textSecondary }}>
                       <button type="button" onClick={() => switchMode("forgot-password")} className="hover:text-[#FF6B4A] transition-colors">Forgot Password?</button>
                     </div>
                   </>
                 )}
 
-                {(mode === "login-otp-req" || mode === "forgot-password") && (
-                  <Field label="Email or Phone Number" type="text" placeholder="you@example.com or phone" icon={Mail} value={form.identifier} onChange={set("identifier")} required error={errors.identifier} />
-                )}
-
-                {(mode === "register-otp" || mode === "login-otp-ver" || mode === "reset-password") && (
-                  <Field label="6-Digit OTP" type="text" placeholder="123456" icon={Shield} value={form.otp} onChange={set("otp")} required error={errors.otp} />
-                )}
-
-                {mode === "reset-password" && (
-                  <Field label="New Password" type="password" placeholder="Min 6 characters" icon={Lock} value={form.password} onChange={set("password")} required error={errors.password} />
-                )}
-
-                {/* Resend OTP Logic */}
-                {(mode === "register-otp" || mode === "login-otp-ver" || mode === "reset-password") && (
-                  <div className="flex justify-end text-xs mt-2" style={{ color: t.textSecondary }}>
-                    {timer > 0 ? (
-                      <span>Resend OTP in {timer}s</span>
-                    ) : (
-                      <button type="button" onClick={() => handleRequestOtp(mode.includes('register') ? 'signup' : mode.includes('reset') ? 'reset' : 'login')} className="font-bold text-[#FF6B4A] hover:underline">
-                        Resend OTP
-                      </button>
-                    )}
-                  </div>
+                {mode === "forgot-password" && (
+                  <>
+                    <Field label="Email or Phone Number" type="text" placeholder="you@example.com or phone" icon={Mail} value={form.identifier} onChange={set("identifier")} required error={errors.identifier} />
+                    <Field label="New Password" type="password" placeholder="Min 6 characters" icon={Lock} value={form.password} onChange={set("password")} required error={errors.password} />
+                    <Field label="Confirm New Password" type="password" placeholder="Repeat password" icon={Lock} value={form.confirm} onChange={set("confirm")} required error={errors.confirm} />
+                  </>
                 )}
 
                 <AnimatePresence>
@@ -477,9 +403,7 @@ export default function Login() {
                       <>
                         {mode === "login" && "Sign in to dashboard"}
                         {mode === "register" && "Create my account"}
-                        {(mode === "login-otp-req" || mode === "forgot-password") && "Send OTP"}
-                        {(mode === "register-otp" || mode === "login-otp-ver") && "Verify & Proceed"}
-                        {mode === "reset-password" && "Reset Password"}
+                        {mode === "forgot-password" && "Reset Password"}
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}

@@ -108,9 +108,7 @@ export default function Settings() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   
-  const [deleteOtp, setDeleteOtp] = useState("");
-  const [deleteOtpSent, setDeleteOtpSent] = useState(false);
-  const [deleteOtpLoading, setDeleteOtpLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [notifPrefs, setNotifPrefs] = useState({ pushExpiry: true, aiInsights: true });
   const [reminderPrefs, setReminderPrefs] = useState({ threeDayWarning: true, oneDayWarning: true, dayOfExpiry: true, weeklyReport: false });
@@ -204,40 +202,20 @@ export default function Settings() {
 
   const handleDeleteAccount = () => {
     setShowDeleteConfirm(true);
-    setDeleteOtpSent(false);
-    setDeleteOtp("");
-  };
-
-  const requestDeleteOtp = async () => {
-    setDeleteOtpLoading(true);
-    try {
-      const res = await api.post('/api/auth/request-otp', { identifier: user?.email, action: 'delete' });
-      if (res.data?.otp) {
-        setDeleteOtp(res.data.otp);
-      }
-      setDeleteOtpSent(true);
-      showToast("OTP generated for verification", "success");
-    } catch (err) {
-      showToast(err.response?.data?.error || "Failed to generate OTP", "error");
-    } finally {
-      setDeleteOtpLoading(false);
-    }
   };
 
   const confirmDeleteAccount = async () => {
-    if (!deleteOtp) return showToast("Please enter the OTP", "error");
-    setDeleteOtpLoading(true);
+    setDeleteLoading(true);
     try {
       await api.delete('/api/users/me', { 
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        data: { otp: deleteOtp }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setShowDeleteConfirm(false);
       logout();
     } catch (err) {
       showToast(err.response?.data?.error || "Failed to delete account", "error");
     } finally {
-      setDeleteOtpLoading(false);
+      setDeleteLoading(false);
     }
   };
 
@@ -405,43 +383,17 @@ export default function Settings() {
       {/* Delete Account Confirmation Modal */}
       <Modal open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Account" size="sm">
         <div className="p-4">
-          {!deleteOtpSent ? (
-            <>
-              <p className="mb-6 font-medium" style={{ color: dark ? "#C9B8AE" : "#6B6560" }}>
-                Are you sure you want to delete your account? This action cannot be undone. Request an OTP to confirm.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setShowDeleteConfirm(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                  Cancel
-                </button>
-                <button disabled={deleteOtpLoading} onClick={requestDeleteOtp} className="px-5 py-2.5 bg-[#FF6B4A] text-white rounded-xl font-medium hover:bg-[#E85A3A] transition-colors disabled:opacity-50">
-                  {deleteOtpLoading ? "Generating..." : "Request OTP"}
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="mb-4 font-medium" style={{ color: dark ? "#C9B8AE" : "#6B6560" }}>
-                Enter the 6-digit confirmation OTP to proceed with account deletion.
-              </p>
-              <Input 
-                type="text" 
-                placeholder="000000" 
-                value={deleteOtp} 
-                onChange={(e) => setDeleteOtp(e.target.value)} 
-                className="mb-6"
-                maxLength={6}
-              />
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setShowDeleteConfirm(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                  Cancel
-                </button>
-                <button disabled={deleteOtpLoading} onClick={confirmDeleteAccount} className="px-5 py-2.5 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors disabled:opacity-50">
-                  {deleteOtpLoading ? "Deleting..." : "Confirm & Delete"}
-                </button>
-              </div>
-            </>
-          )}
+          <p className="mb-6 font-medium" style={{ color: dark ? "#C9B8AE" : "#6B6560" }}>
+            Are you sure you want to delete your account? All your inventory, meal logs, and profile data will be permanently removed. This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button onClick={() => setShowDeleteConfirm(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+              Cancel
+            </button>
+            <button disabled={deleteLoading} onClick={confirmDeleteAccount} className="px-5 py-2.5 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors disabled:opacity-50">
+              {deleteLoading ? "Deleting..." : "Confirm & Delete"}
+            </button>
+          </div>
         </div>
       </Modal>
 

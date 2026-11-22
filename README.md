@@ -49,8 +49,8 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
 ## 🚀 Recent Updates & Enhancements
 - **Customized History (Activity Log):** Upgraded the Activity page to a full History tracking system with dedicated filters (Logged Meals, Expired Items, Added Items, Used Items).
 - **Smart Kitchen Flow:** Seamlessly log cooked AI recipes into the Calorie Tracker. Recipes dynamically move to a dedicated Cooking History modal upon logging.
-- **Account Security:** Implemented secure OTP-based account deletion.
-- **Automated Expiry Tracking:** A background CRON job tracks expiring inventory and sends automated email and in-app push notifications when items expire.
+- **Account Security:** Implemented secure account deletion with explicit confirmation.
+- **Automated Expiry Tracking:** A background CRON job tracks expiring inventory and sends automated in-app notifications when items expire.
 - **Native Language Toggle:** Custom-built Google Translate integration allows 1-click toggling between English and Kannada without intrusive widgets or banners.
 
 ---
@@ -61,7 +61,7 @@ NutriVision AI is an AI-powered smart nutrition and inventory management web app
 | ---------------- | ----------------------------------------------- |
 | **Frontend**     | React, Vite, Tailwind CSS, Framer Motion, Recharts, Lucide React, React Router |
 | **Backend**      | Node.js, Express.js, Sequelize ORM (SQLite / PostgreSQL) |
-| **Authentication**| JWT (JSON Web Tokens), bcryptjs, OTP verification |
+| **Authentication**| JWT (JSON Web Tokens), bcryptjs |
 | **AI Integration**| Google Gemini API (`gemini-3.5-flash-lite`) using the official `@google/genai` SDK |
 | **Other Tools**  | node-cron, Multer (image uploads), Markdown parsing (react-markdown) |
 
