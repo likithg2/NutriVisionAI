@@ -1,114 +1,87 @@
-# Deployment Guide — NutriVisionAI
+# Production Deployment Guide — NutriVisionAI
 
-## Architecture Overview
-
-| Layer | Technology | Notes |
-|-------|-----------|-------|
-| Frontend | React + Vite | Deploy to Vercel / Netlify |
-| Backend | Node.js + Express | Deploy to Railway / Render / Fly.io |
-| Database | PostgreSQL | Neon / Supabase / Railway Postgres |
-| File Storage | Local disk (avatars) | ⚠️ See note below |
+This guide details deployment of NutriVisionAI for the target architecture:
+- **Frontend**: [Vercel](https://vercel.com/)
+- **Backend**: [Render](https://render.com/)
+- **Database**: [Supabase](https://supabase.com/) (Managed PostgreSQL)
 
 ---
 
-## 1 · Backend (Railway / Render / Fly.io)
+## 1 · Database Setup (Supabase PostgreSQL)
 
-### Environment variables
-
-Copy `backend/.env.example` → `backend/.env` for local dev.  
-On your host, set all variables via the platform's dashboard (never commit `.env`).
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | ✅ | Full PostgreSQL connection string |
-| `JWT_SECRET` | ✅ | Long random string (64+ bytes) |
-| `FRONTEND_URL` | ✅ | Deployed frontend URL (CORS) — comma-separate multiple |
-| `PORT` | auto | Usually set by host; defaults to `5000` |
-| `GEMINI_API_KEY` | ✅ | Google Gemini API key |
-| `OPENAI_API_KEY` | optional | Fallback AI |
-| `NEMOTRON_API_KEY` | optional | Fallback AI |
-| `USDA_API_KEY` | ✅ | get a free key at https://fdc.nal.usda.gov/api-key-signup.html |
-| `SMTP_*` | optional | Email notifications |
-| `VAPID_*` | optional | Web push notifications |
-
-### Database migrations
-
-The server runs `sequelize.sync({ alter: true })` on startup — tables are auto-created/altered.  
-For first-run seeding: `node backend/seed_data.js`
-
-> [!IMPORTANT]
-> `connectDB()` now **throws** on failure, so the server process will exit (non-zero) if PostgreSQL is unreachable. Your host will show the error in logs and not mark the deploy as healthy.
+1. Create a new project in [Supabase](https://supabase.com/).
+2. In Supabase Dashboard, navigate to **Project Settings** → **Database**.
+3. Under **Connection string**, select **URI**:
+   - For direct connections (Render long-running servers): Use **Direct connection** (port `5432`):
+     ```text
+     postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres?sslmode=require
+     ```
+   - For IPv4/pooled connections: Use **Transaction pooler** (port `6543`):
+     ```text
+     postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require
+     ```
+4. **SSL is automatically supported**: The backend code detects Supabase connection strings and enables `dialectOptions.ssl = { require: true, rejectUnauthorized: false }`.
+5. **Initial Schema Sync**: When the backend starts up, Sequelize automatically initializes the schema with `force: false, alter: true` (no existing tables or data are ever dropped).
+6. Optional sample data: Run `node backend/seed_data.js` with your `DATABASE_URL` set to seed initial test foods and goals.
 
 ---
 
-## 2 · Frontend (Vercel)
+## 2 · Backend Deployment (Render Web Service)
 
-### Environment variables
+1. In [Render Dashboard](https://dashboard.render.com/), click **New** → **Web Service**.
+2. Connect your GitHub repository: `https://github.com/likithg2/NutriVisionAI`.
+3. Configure the service settings:
+   - **Name**: `nutrivisionai-backend`
+   - **Region**: Choose region closest to your Supabase database (e.g., Oregon, Frankfurt, Singapore)
+   - **Branch**: `main`
+   - **Root Directory**: `backend`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Plan**: `Free` (or Starter for 24/7 zero-spin-down)
+4. Add the **Health Check Path**: `/health` (or `/api/health`).
+5. In **Environment Variables**, add:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_API_BASE_URL` | see below | Backend URL |
+| Key | Value / Instructions |
+|---|---|
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | Your Supabase connection string (`...sslmode=require`) |
+| `DB_CA_CERT_PATH` | (Optional) Path to CA cert for strict verification (e.g. `/etc/secrets/prod-ca-2021.crt`). If omitted, standard cloud SSL (`rejectUnauthorized: false`) is used. |
+| `JWT_SECRET` | 64+ char random string (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`) |
+| `FRONTEND_URL` | `https://your-frontend.vercel.app` (your actual Vercel domain) |
+| `ALLOWED_ORIGINS` | `https://your-frontend.vercel.app` |
+| `GEMINI_API_KEY` | Your Google Gemini API Key |
+| `USDA_API_KEY` | Your USDA API Key (or `DEMO_KEY`) |
+| `WEB_PUSH_PUBLIC_VAPID_KEY` | (Optional) VAPID public key for push notifications |
+| `WEB_PUSH_PRIVATE_VAPID_KEY` | (Optional) VAPID private key |
+| `WEB_PUSH_CONTACT` | (Optional) `mailto:your-email@domain.com` |
 
-**Same-origin deployment** (Vercel rewrite or unified host): leave `VITE_API_BASE_URL` unset — the axios client defaults to `"/"` and Vite's proxy handles `/api` in dev.
-
-**Separate-origin deployment** (frontend on Vercel, backend on Railway):
-1. Set `VITE_API_BASE_URL=https://your-backend.railway.app` in Vercel project settings.
-2. Add a `vercel.json` rewrite OR set CORS on the backend to allow your Vercel domain.
-
-#### Vercel rewrite approach (recommended — keeps same origin)
-
-```json
-// frontend/vercel.json
-{
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "https://your-backend.railway.app/api/:path*" },
-    { "source": "/uploads/:path*", "destination": "https://your-backend.railway.app/uploads/:path*" }
-  ]
-}
-```
-
-With this in place, `VITE_API_BASE_URL` can remain unset.
-
----
-
-## 3 · File Uploads (Avatar images) ⚠️
-
-Currently avatars are stored on the **backend server's local filesystem** (`public/uploads/avatars/`).
-
-**Problem**: Most PaaS hosts (Railway, Render, Fly.io) have **ephemeral filesystems** — files are wiped on each redeploy or restart.
-
-**Options**:
-
-| Option | Effort | Cost |
-|--------|--------|------|
-| ✅ **Cloudinary** (recommended) | Low | Free tier available |
-| AWS S3 / Cloudflare R2 | Medium | Cheap |
-| Persistent volume (Railway / Fly.io) | Low | Small monthly fee |
-
-Until cloud storage is wired up, avatar uploads will work locally but **will not persist across backend redeployments**.
+> [!NOTE]
+> Render provides `PORT` automatically; the server listens on `0.0.0.0` at `process.env.PORT`.
 
 ---
 
-## 4 · CORS checklist
+## 3 · Frontend Deployment (Vercel)
 
-Before going live:
-- [ ] Set `FRONTEND_URL` on the backend host to your exact Vercel URL (e.g. `https://nutrivision.vercel.app`)
-- [ ] Remove or gate the local dev origins in production if desired (`NODE_ENV=production` check)
+1. In [Vercel Dashboard](https://vercel.com/dashboard), click **Add New** → **Project**.
+2. Import your GitHub repository: `https://github.com/likithg2/NutriVisionAI`.
+3. Configure the build settings:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+   - **Install Command**: `npm install`
+4. Add **Environment Variables**:
+   - `VITE_API_BASE_URL` = `https://your-backend-name.onrender.com` (your Render backend URL without trailing slash)
+5. **SPA Routing**: `frontend/vercel.json` is included in the project to route all client-side navigation (`/kitchen`, `/calories`, `/login`) to `/index.html` without 404 errors.
 
 ---
 
-## 5 · Quick-start (local)
+## 4 · File Uploads & Avatars Notice
 
-```bash
-# Backend
-cd backend
-cp .env.example .env   # fill in your values
-npm install
-npm run dev            # starts on :5000
-
-# Frontend
-cd frontend
-cp .env.example .env   # optional — only needed for separate-origin
-npm install
-npm run dev            # starts on :5173, proxies /api → :5000
-```
+- Food scanner images (`POST /api/ai/scan`) use in-memory buffers sent directly to the Gemini Vision API and never touch server disk.
+- User profile avatars (`POST /api/users/me/avatar`) are currently stored locally in `backend/public/uploads/avatars/`.
+- On Render's Free tier, the filesystem is ephemeral (uploaded images reset when the service spins down or restarts).
+- For persistent avatar storage across restarts on Render:
+  - Option A: Add a Render **Persistent Disk** mounted at `/var/data/uploads` and set environment variable `UPLOADS_DIR=/var/data/uploads`.
+  - Option B: Integrate cloud object storage (e.g. Supabase Storage, AWS S3, or Cloudinary).

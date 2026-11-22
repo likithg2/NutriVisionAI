@@ -35,7 +35,7 @@ const Notification = sequelize.define('Notification', {
   },
   type: {
     type: DataTypes.STRING,
-    defaultValue: 'email',
+    defaultValue: 'push',
   },
   read: {
     type: DataTypes.BOOLEAN,

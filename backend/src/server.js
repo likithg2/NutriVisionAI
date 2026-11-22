@@ -1,4 +1,5 @@
 // server.js
+import './config/env.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -50,25 +51,36 @@ app.use((req, res, next) => {
 });
 
 /** CORS */
-// In production, set FRONTEND_URL env var to your deployed frontend URL.
-// Multiple origins can be comma-separated: "https://app.example.com,https://www.example.com"
-const allowedOrigins = [
-  ...( process.env.FRONTEND_URL
-        ? process.env.FRONTEND_URL.split(',').map(u => u.trim())
-        : [] ),
-  // Always allow local dev origins
+// Configure allowed origins via ALLOWED_ORIGINS or FRONTEND_URL (supports comma-separated list).
+const envOrigins = [
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(u => u.trim()) : []),
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : []),
+].filter(Boolean);
+
+const devOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-].filter(Boolean);
+  'http://localhost:5000',
+  'http://127.0.0.1:5000',
+];
+
+const isProduction = process.env.NODE_ENV === 'production';
+// In production, enforce explicit origins from environment variables.
+// Fallback to dev origins only if no origins are configured or in dev.
+const allowedOrigins = Array.from(new Set([
+  ...envOrigins,
+  ...(!isProduction || envOrigins.length === 0 ? devOrigins : [])
+]));
 
 app.use(
   cors({
     origin: (origin, cb) => {
+      // Allow requests with no origin (mobile apps, curl, server-to-server, health checks)
       if (!origin) return cb(null, true);
       if (allowedOrigins.includes(origin)) return cb(null, true);
-      return cb(new Error('Not allowed by CORS'));
+      return cb(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true
   })
@@ -77,12 +89,14 @@ app.use(
 app.use(morgan('dev'));
 
 /** static files */
-const publicDir = path.resolve(process.cwd(), 'public');
+const publicDir = process.env.PUBLIC_DIR || path.resolve(__dirname, '../public');
+const uploadsDir = process.env.UPLOADS_DIR || path.join(publicDir, 'uploads');
 app.use(express.static(publicDir));
-app.use('/uploads', express.static(path.join(publicDir, 'uploads')));
+app.use('/uploads', express.static(uploadsDir));
 
-/** health */
-app.get('/api/health', (req, res) => res.json({ status: 'ok', env: process.env.NODE_ENV || 'dev' }));
+/** health checks */
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', env: process.env.NODE_ENV || 'dev', timestamp: new Date().toISOString() }));
 
 /** main routes */
 app.use('/api/auth', authRoutes);
@@ -112,12 +126,12 @@ app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 app.use(errorHandler);
 
 /** start */
-const port = process.env.PORT || 5000;
+const port = Number(process.env.PORT) || 5000;
 connectDB()
   .then(() => {
     initCronJobs();
-    app.listen(port, () => {
-      console.log(`SmartShelf API running on http://localhost:${port}`);
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`SmartShelf API running on port ${port} (env: ${process.env.NODE_ENV || 'dev'})`);
     });
   })
   .catch((err) => {

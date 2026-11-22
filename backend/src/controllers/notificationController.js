@@ -1,7 +1,6 @@
 import { Op } from 'sequelize';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
-import { sendEmail } from '../utils/mailer.js';
 import { sendPushToAll } from '../utils/push.js';
 
 function toInt(v, def, min = 1, max = 100) {
@@ -34,7 +33,7 @@ export async function list(req, res, next) {
       ];
     }
 
-    if (type && ['email', 'push', 'system'].includes(type)) {
+    if (type && ['push', 'system', 'alert'].includes(type)) {
       find.type = type;
     }
 
@@ -137,7 +136,7 @@ export async function getPrefs(req, res, next) {
     const user = await User.findByPk(req.user.id, { attributes: ['notificationPrefs'] });
     res.json(
       user?.notificationPrefs || {
-        emailEnabled: true,
+        pushEnabled: true,
         expiringSoon: true,
         expired: true,
         digestDaily: false,
@@ -152,7 +151,7 @@ export async function getPrefs(req, res, next) {
 export async function updatePrefs(req, res, next) {
   try {
     const {
-      emailEnabled = true,
+      pushEnabled = true,
       expiringSoon = true,
       expired = true,
       digestDaily = false,
@@ -161,7 +160,7 @@ export async function updatePrefs(req, res, next) {
 
     await User.update({
       notificationPrefs: {
-        emailEnabled: !!emailEnabled,
+        pushEnabled: !!pushEnabled,
         expiringSoon: !!expiringSoon,
         expired: !!expired,
         digestDaily: !!digestDaily,
@@ -178,19 +177,8 @@ export async function updatePrefs(req, res, next) {
 
 export async function sendTest(req, res, next) {
   try {
-    const htmlBody = `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-        <h2 style="color: #FF6B4A; text-align: center;">NutriVision Test Notification</h2>
-        <p style="font-size: 16px; color: #333;">Hello,</p>
-        <p style="font-size: 16px; color: #333;">This is a test email to confirm your notification settings are working correctly.</p>
-        <div style="background: #fdf8f3; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #FF6B4A;">
-          <p style="margin: 0; color: #E5533D;"><strong>Test Successful!</strong> 🎉</p>
-        </div>
-      </div>
-    `;
-    await sendEmail(req.user.email, 'Test Notification', 'This is a test email.', htmlBody);
     await sendPushToAll('Test Push', 'This is a test push message.');
-    res.json({ ok: true });
+    res.json({ ok: true, message: 'Test push notification sent.' });
   } catch (err) {
     next(err);
   }

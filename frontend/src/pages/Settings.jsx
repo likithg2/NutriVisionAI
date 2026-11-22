@@ -112,16 +112,14 @@ export default function Settings() {
   const [deleteOtpSent, setDeleteOtpSent] = useState(false);
   const [deleteOtpLoading, setDeleteOtpLoading] = useState(false);
 
-  const [notifPrefs, setNotifPrefs] = useState({ emailExpiry: true, pushExpiry: true, emailDigest: false, aiInsights: true });
+  const [notifPrefs, setNotifPrefs] = useState({ pushExpiry: true, aiInsights: true });
   const [reminderPrefs, setReminderPrefs] = useState({ threeDayWarning: true, oneDayWarning: true, dayOfExpiry: true, weeklyReport: false });
 
   useEffect(() => {
     const initPrefs = (u) => {
       if (u?.notificationPrefs) {
         setNotifPrefs({
-          emailExpiry: u.notificationPrefs.emailExpiry ?? true,
           pushExpiry: u.notificationPrefs.pushExpiry ?? true,
-          emailDigest: u.notificationPrefs.emailDigest ?? false,
           aiInsights: u.notificationPrefs.aiInsights ?? true,
         });
         setReminderPrefs({
@@ -213,11 +211,14 @@ export default function Settings() {
   const requestDeleteOtp = async () => {
     setDeleteOtpLoading(true);
     try {
-      await api.post('/api/auth/otp', { identifier: user?.email, action: 'delete' });
+      const res = await api.post('/api/auth/request-otp', { identifier: user?.email, action: 'delete' });
+      if (res.data?.otp) {
+        setDeleteOtp(res.data.otp);
+      }
       setDeleteOtpSent(true);
-      showToast("OTP sent to your email", "success");
+      showToast("OTP generated for verification", "success");
     } catch (err) {
-      showToast(err.response?.data?.error || "Failed to send OTP", "error");
+      showToast(err.response?.data?.error || "Failed to generate OTP", "error");
     } finally {
       setDeleteOtpLoading(false);
     }
@@ -257,7 +258,15 @@ export default function Settings() {
           <div className="relative group">
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg overflow-hidden"
               style={{ background: "linear-gradient(135deg, #FF6B4A, #D94A3A)", boxShadow: "0 0 24px rgba(255,107,74,0.3)" }}>
-              {user?.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" /> : initials}
+              {user?.avatarUrl ? (
+                <img 
+                  src={user.avatarUrl.startsWith('http://') || user.avatarUrl.startsWith('https://') 
+                    ? user.avatarUrl 
+                    : `${(import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')}${user.avatarUrl}`} 
+                  alt="" 
+                  className="w-full h-full object-cover" 
+                />
+              ) : initials}
             </div>
             <label className="absolute inset-0 rounded-2xl bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
               <Camera className="w-5 h-5 text-white" />
@@ -343,8 +352,6 @@ export default function Settings() {
           <h2 className="font-semibold text-sm">Notifications</h2>
         </div>
         <div className="divide-y divide-white/5">
-          <Toggle enabled={notifPrefs.emailExpiry} onToggle={() => setNotifPrefs(p => ({ ...p, emailExpiry: !p.emailExpiry }))}
-            label="Email expiry alerts" desc="Get notified when items are about to expire" />
           <Toggle enabled={notifPrefs.pushExpiry} onToggle={() => setNotifPrefs(p => ({ ...p, pushExpiry: !p.pushExpiry }))}
             label="Push notifications" desc="Browser push alerts for expiring items" />
         </div>
@@ -401,21 +408,21 @@ export default function Settings() {
           {!deleteOtpSent ? (
             <>
               <p className="mb-6 font-medium" style={{ color: dark ? "#C9B8AE" : "#6B6560" }}>
-                Are you sure you want to delete your account? This action cannot be undone. We will send an OTP to your email to confirm.
+                Are you sure you want to delete your account? This action cannot be undone. Request an OTP to confirm.
               </p>
               <div className="flex justify-end gap-3">
                 <button onClick={() => setShowDeleteConfirm(false)} className="px-5 py-2.5 rounded-xl font-medium transition-colors" style={{ color: dark ? '#C9B8AE' : '#6B6560', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
                   Cancel
                 </button>
                 <button disabled={deleteOtpLoading} onClick={requestDeleteOtp} className="px-5 py-2.5 bg-[#FF6B4A] text-white rounded-xl font-medium hover:bg-[#E85A3A] transition-colors disabled:opacity-50">
-                  {deleteOtpLoading ? "Sending..." : "Request OTP"}
+                  {deleteOtpLoading ? "Generating..." : "Request OTP"}
                 </button>
               </div>
             </>
           ) : (
             <>
               <p className="mb-4 font-medium" style={{ color: dark ? "#C9B8AE" : "#6B6560" }}>
-                Enter the 6-digit OTP sent to your email to confirm account deletion.
+                Enter the 6-digit confirmation OTP to proceed with account deletion.
               </p>
               <Input 
                 type="text" 

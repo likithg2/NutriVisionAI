@@ -118,12 +118,13 @@ cd calorie-ai
 cd backend
 npm install
 ```
-Create a `.env` file in the `backend` directory and add your credentials:
+Create a `.env` file in the `backend` directory (see `backend/.env.example` for all options):
 ```env
 PORT=5000
-DATABASE_URL=sqlite:./database.sqlite # or your Postgres URL
+DATABASE_URL=postgresql://user:password@localhost:5432/nutrivision
 GEMINI_API_KEY=your_google_gemini_api_key
 JWT_SECRET=your_jwt_secret
+FRONTEND_URL=http://localhost:5173
 ```
 Start the backend server:
 ```bash

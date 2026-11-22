@@ -170,14 +170,17 @@ export default function Login() {
     setLoading(true); setApiError(""); setSuccess("");
     try {
       const idToUse = form.identifier;
-      await requestOtp(idToUse, actionType);
-      setSuccess("OTP sent to your email!");
+      const res = await requestOtp(idToUse, actionType);
+      if (res.data?.otp) {
+        setForm(f => ({ ...f, otp: res.data.otp }));
+      }
+      setSuccess("OTP generated successfully!");
       setTimer(90); // 1.5 minutes
       if (actionType === "signup") setMode("register-otp");
       else if (actionType === "login") setMode("login-otp-ver");
       else if (actionType === "reset") setMode("reset-password");
     } catch (err) {
-      setApiError(err.response?.data?.error || "Failed to send OTP");
+      setApiError(err.response?.data?.error || "Failed to generate OTP");
       setShowShake(true); setTimeout(() => setShowShake(false), 500);
     } finally {
       setLoading(false);
@@ -194,9 +197,12 @@ export default function Login() {
         finishAuth(res.data, "Welcome back!");
       } 
       else if (mode === "register") {
-        // Instead of signing up immediately, request OTP first
-        await handleRequestOtp("signup");
-        // setLoading(false) is handled in handleRequestOtp
+        const payload = {
+          name: form.name, email: form.identifier, password: form.password, phone: form.phone,
+          age: form.age, height: form.height, weight: form.weight, gender: form.gender, goal: form.goal, activityLevel: form.activityLevel, district: form.district
+        };
+        const res = await apiSignup(payload);
+        finishAuth(res.data, "Account created!");
       }
       else if (mode === "register-otp") {
         const payload = {
@@ -363,7 +369,7 @@ export default function Login() {
                     {mode === "login" && "Sign in to continue to your dashboard"}
                     {mode === "register" && "Start tracking your nutrition today"}
                     {mode === "forgot-password" && "Enter your email or phone to reset your password"}
-                    {mode.includes("otp") && "We've sent a 6-digit code to your email."}
+                    {mode.includes("otp") && "Enter your 6-digit verification code."}
                   </p>
                 </motion.div>
               </AnimatePresence>

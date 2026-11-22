@@ -1,7 +1,6 @@
 import { Op } from 'sequelize'
 import Item from '../models/Item.js'
 import Notification from '../models/Notification.js'
-import { sendEmail } from '../utils/mailer.js'
 import { sendPushToUser } from '../utils/push.js'
 import { getRecipientEmail } from '../utils/notify.js'
 import Activity from '../models/Activity.js'
@@ -132,32 +131,6 @@ export async function addItem(req, res, next) {
         await Item.update({ notified: true, notifiedAt: new Date() }, { where: { id: item.id } })
       } catch (e) {
         console.error('[itemController] sendPushToUser failed', e && e.statusCode || e)
-      }
-
-      if (email) {
-        const daysUntilExpiry = Math.ceil((new Date(item.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-        const htmlBody = `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-            <h2 style="color: #FF6B4A; text-align: center;">NutriVision Expiry Alert</h2>
-            <p style="font-size: 16px; color: #333;">Hello,</p>
-            <p style="font-size: 16px; color: #333;">You just added an item that is already expiring soon.</p>
-            
-            <div style="background: #fdf8f3; padding: 15px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #E5533D;">${item.name}</h3>
-              <ul style="list-style: none; padding: 0; margin: 0;">
-                <li style="margin-bottom: 8px;"><strong>Category:</strong> ${item.category || 'Grocery'}</li>
-                <li style="margin-bottom: 8px;"><strong>Quantity:</strong> ${item.quantity || 1} ${item.unit || 'pcs'}</li>
-                <li style="margin-bottom: 8px;"><strong>Location:</strong> ${item.location || 'Pantry'}</li>
-                <li style="margin-bottom: 8px;"><strong>Expires:</strong> ${new Date(item.expiryDate).toLocaleDateString()} <span style="color: #E5533D; font-weight: bold;">(in ${daysUntilExpiry} days)</span></li>
-              </ul>
-            </div>
-            
-            <p style="font-size: 14px; color: #666;">Don't let it go to waste! Check your NutriVision app's Smart Kitchen to find a great recipe using this item.</p>
-            <br/>
-            <p style="font-size: 12px; color: #999; text-align: center;">You can turn off these notifications in your NutriVision Settings.</p>
-          </div>
-        `;
-        sendEmail(email, title, msg, htmlBody).catch((e) => console.error('[itemController] sendEmail failed', e))
       }
     }
 
@@ -399,32 +372,6 @@ export async function updateItem(req, res, next) {
         await Item.update({ notified: true, notifiedAt: new Date() }, { where: { id: item.id } })
       } catch (e) {
         console.error('[itemController] sendPushToUser failed', e && e.statusCode || e)
-      }
-
-      if (email) {
-        const daysUntilExpiry = Math.ceil((new Date(item.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-        const htmlBody = `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-            <h2 style="color: #FF6B4A; text-align: center;">NutriVision Expiry Alert</h2>
-            <p style="font-size: 16px; color: #333;">Hello,</p>
-            <p style="font-size: 16px; color: #333;">An item in your inventory was recently updated and is expiring soon.</p>
-            
-            <div style="background: #fdf8f3; padding: 15px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #E5533D;">${item.name}</h3>
-              <ul style="list-style: none; padding: 0; margin: 0;">
-                <li style="margin-bottom: 8px;"><strong>Category:</strong> ${item.category || 'Grocery'}</li>
-                <li style="margin-bottom: 8px;"><strong>Quantity:</strong> ${item.quantity || 1} ${item.unit || 'pcs'}</li>
-                <li style="margin-bottom: 8px;"><strong>Location:</strong> ${item.location || 'Pantry'}</li>
-                <li style="margin-bottom: 8px;"><strong>Expires:</strong> ${new Date(item.expiryDate).toLocaleDateString()} <span style="color: #E5533D; font-weight: bold;">(in ${daysUntilExpiry} days)</span></li>
-              </ul>
-            </div>
-            
-            <p style="font-size: 14px; color: #666;">Don't let it go to waste! Check your NutriVision app's Smart Kitchen to find a great recipe using this item.</p>
-            <br/>
-            <p style="font-size: 12px; color: #999; text-align: center;">You can turn off these notifications in your NutriVision Settings.</p>
-          </div>
-        `;
-        sendEmail(email, title, msg, htmlBody).catch((e) => console.error('[itemController] sendEmail failed', e))
       }
     }
 

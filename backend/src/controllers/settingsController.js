@@ -232,13 +232,9 @@ export async function testNotification(req, res, next) {
     const id = req.user?.id || req.user?._id;
     if (!id) return res.status(401).json({ error: 'Unauthorized' });
 
-    // Keep a record of what succeeded
-    let emailSent = false;
     let pushSent = false;
-    let emailError = null;
     let pushError = null;
 
-    // Try to fetch full user (to get email, push subscription info etc.)
     let dbUser = null;
     try {
       dbUser = await User.findByPk(id, { attributes: { exclude: ['password'] } });
@@ -246,45 +242,18 @@ export async function testNotification(req, res, next) {
       console.warn('testNotification: failed to load user from DB:', e?.message || e);
     }
 
-    // Best-effort: try sending email if mailer exists and user has an email
-    if (dbUser?.email) {
-      try {
-        // dynamic import so missing mailer util won't crash server
-        const mailer = await import('../utils/mailer.js').catch(() => null);
-        const sendEmail = mailer?.sendEmail ?? mailer?.default?.sendEmail;
-        if (typeof sendEmail === 'function') {
-          // Customize subject/body as you like (kept minimal & safe)
-          const subject = 'SmartShelf — Test notification';
-          const text = `This is a test notification triggered by user ${dbUser.name || dbUser.email}. If you received this, email sending works.`;
-          // sendEmail should be implemented to accept (to, subject, text, html?) — adapt if your signature differs
-          await sendEmail(dbUser.email, subject, text).catch((e) => { throw e; });
-          emailSent = true;
-        } else {
-          // mailer not implemented; skip
-          emailSent = false;
-        }
-      } catch (e) {
-        emailError = e?.message || String(e);
-        console.warn('testNotification: email send failed', emailError);
-      }
-    }
-
     // Best-effort: try sending push notification if push util exists
     try {
       const pushUtil = await import('../utils/push.js').catch(() => null);
       const sendPushToUser = pushUtil?.sendPushToUser ?? pushUtil?.default?.sendPushToUser;
       if (typeof sendPushToUser === 'function') {
-        // Example payload; adapt to your push util expectations
         const payload = {
           title: 'SmartShelf — Test notification',
           body: `Hello ${dbUser?.name || 'user'}, this is a test notification.`,
           data: { test: true }
         };
-        // sendPushToUser should accept (userId, payload) or similar — adapt if needed
         await sendPushToUser(id.toString(), payload).catch((e) => { throw e; });
         pushSent = true;
-      } else {
-        pushSent = false;
       }
     } catch (e) {
       pushError = e?.message || String(e);
@@ -301,29 +270,23 @@ export async function testNotification(req, res, next) {
         meta: {
           test: true,
           triggeredAt: new Date(),
-          emailSent,
           pushSent,
-          emailError,
           pushError
         }
       });
     } catch (e) {
-      // non-fatal
       console.warn('testNotification: activity logging failed', e?.message || e);
     }
 
-    // Return a clear response the frontend can use
     return res.json({
       ok: true,
-      emailSent,
       pushSent,
-      message: emailSent || pushSent
-        ? 'Test notification sent (best-effort).'
-        : 'Test recorded (no email/push available).',
-      details: { emailError, pushError }
+      message: pushSent
+        ? 'Test push notification sent (best-effort).'
+        : 'Test recorded (no push active).',
+      details: { pushError }
     });
   } catch (err) {
-    // unexpected error — forward to express error handler
     next(err);
   }
 }

@@ -1,7 +1,6 @@
 // backend/src/controllers/authController.js
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
-import { sendEmail } from '../utils/mailer.js'
 import crypto from 'crypto'
 import Activity from '../models/Activity.js'
 import { makeActivityPayload } from '../utils/activityHelper.js'
@@ -20,19 +19,21 @@ const generateOTP = () => crypto.randomInt(100000, 1000000).toString()
 export async function signup(req, res, next) {
   try {
     const { name, email, password, phone, age, height, weight, gender, goal, activityLevel, district, otp } = req.body
-    if (!name || !email || !password || !otp) return res.status(400).json({ error: 'Missing required fields' })
+    if (!name || !email || !password) return res.status(400).json({ error: 'Missing required fields' })
     
-    // Verify OTP
-    const stored = otpStore.get(email.toLowerCase())
-    if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
-      return res.status(400).json({ error: 'Invalid or expired OTP' })
+    // Verify OTP if provided
+    if (otp) {
+      const stored = otpStore.get(email.toLowerCase())
+      if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
+        return res.status(400).json({ error: 'Invalid or expired OTP' })
+      }
+      otpStore.delete(email.toLowerCase()) // clear OTP after successful use
     }
 
     const exists = await User.findOne({ where: { [Op.or]: [{ email }, phone ? { phone } : null].filter(Boolean) } })
     if (exists) return res.status(400).json({ error: 'Email or phone already used' })
     
     const user = await User.create({ name, email, password, phone, age, height, weight, gender, goal, activityLevel, district })
-    otpStore.delete(email.toLowerCase()) // clear OTP after successful use
     const token = signToken(user)
 
     // log activity (standardized)
@@ -108,7 +109,7 @@ export async function logout(req, res) {
 }
 
 /**
- * requestOtp(req): Generate a 6-digit OTP and send it via email.
+ * requestOtp(req): Generate a 6-digit OTP
  */
 export async function requestOtp(req, res, next) {
   try {
@@ -136,24 +137,9 @@ export async function requestOtp(req, res, next) {
     
     otpStore.set(targetEmail, { otp, expiresAt })
 
-    let subject = 'Your NutriVision OTP';
-    let message = `Your one-time password is: ${otp}\n\nIt will expire in 10 minutes.`;
+    console.log(`[AUTH OTP] OTP generated for ${targetEmail}: ${otp}`)
 
-    if (action === 'reset') {
-      subject = 'Reset your NutriVision password';
-      message = `Use this OTP to reset your password: ${otp}\n\nIt will expire in 10 minutes.`;
-    } else if (action === 'delete') {
-      subject = 'Confirm your NutriVision Account Deletion';
-      message = `You have requested to delete your NutriVisionAi account.\n\nUse this OTP to confirm deletion: ${otp}\n\nIf you did not request this, please ignore this email.`;
-    }
-
-    try {
-      await sendEmail(targetEmail, subject, message)
-    } catch (e) {
-      console.error('Failed to send OTP email:', e);
-    }
-
-    return res.json({ message: 'OTP sent to your email.' })
+    return res.json({ message: 'OTP generated successfully.', otp })
   } catch (err) {
     next(err)
   }

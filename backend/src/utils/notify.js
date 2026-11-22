@@ -1,6 +1,5 @@
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
-import { sendEmail } from './mailer.js';
 import { sendPushToUser } from './push.js';
 
 /**
@@ -18,7 +17,7 @@ export async function getRecipientEmail(req) {
  * @param {string} userId - UUID of the user
  * @param {string} title - Notification title
  * @param {string} message - Notification body/message
- * @param {string} type - Notification type (e.g. 'push', 'email', 'alert')
+ * @param {string} type - Notification type (e.g. 'push', 'system', 'alert')
  */
 export async function notifyUser(userId, title, message, type = 'push') {
   try {
@@ -34,21 +33,12 @@ export async function notifyUser(userId, title, message, type = 'push') {
     });
 
     const prefs = user.notificationPrefs || {};
-    // Default to true if not explicitly set to false
-    const emailEnabled = prefs.emailExpiry !== false && prefs.emailEnabled !== false;
     const pushEnabled = prefs.pushExpiry !== false && prefs.pushEnabled !== false;
 
     // Send push
     if (pushEnabled) {
       sendPushToUser(userId, title, message).catch(e => {
         console.error(`[notifyUser] push error for user ${String(userId).replace(/[\r\n]/g, '')}:`, e?.message || e);
-      });
-    }
-
-    // Send email
-    if (emailEnabled && user.email) {
-      sendEmail(user.email, title, message).catch(e => {
-        console.error(`[notifyUser] email error for user ${userId}:`, e?.message || e);
       });
     }
 

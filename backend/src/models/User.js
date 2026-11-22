@@ -44,9 +44,7 @@ const User = sequelize.define('User', {
   notificationPrefs: {
     type: DataTypes.JSON,
     defaultValue: {
-      emailExpiry: true,
       pushExpiry: true,
-      emailDigest: false,
       aiInsights: true,
       threeDayWarning: true,
       oneDayWarning: true,

@@ -87,7 +87,9 @@ const router = Router()
 // multer storage
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const uploadDir = path.resolve(process.cwd(), 'public', 'uploads', 'avatars')
+const uploadDir = process.env.UPLOADS_DIR 
+  ? path.resolve(process.env.UPLOADS_DIR, 'avatars')
+  : path.resolve(__dirname, '../../public/uploads/avatars')
 
 // ensure directory exists
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true })

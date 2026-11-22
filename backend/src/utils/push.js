@@ -1,9 +1,9 @@
 // server/utils/push.js
 import webpush from 'web-push';
 
-const pub = process.env.WEB_PUSH_PUBLIC_VAPID_KEY;
-const priv = process.env.WEB_PUSH_PRIVATE_VAPID_KEY;
-const contact = process.env.WEB_PUSH_CONTACT || 'mailto:example@example.com';
+const pub = process.env.WEB_PUSH_PUBLIC_VAPID_KEY || process.env.VAPID_PUBLIC_KEY;
+const priv = process.env.WEB_PUSH_PRIVATE_VAPID_KEY || process.env.VAPID_PRIVATE_KEY;
+const contact = process.env.WEB_PUSH_CONTACT || process.env.VAPID_EMAIL || 'mailto:example@example.com';
 
 if (pub && priv) {
   try {

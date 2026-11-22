@@ -31,8 +31,6 @@ export function makeActivityPayload({
     'auth:login': '🔑',
     'auth:logout': '🚪',
     'auth:signup': '🎉',
-    'mail:sent': '✉️',
-    'mail:attempt': '✉️',
     'auth:reset': '🔒'
   }
 
@@ -43,8 +41,6 @@ export function makeActivityPayload({
     'auth:login': 'User logged in',
     'auth:logout': 'User logged out',
     'auth:signup': 'New user',
-    'mail:sent': 'Email sent',
-    'mail:attempt': 'Email attempt',
     'auth:reset': 'Password reset'
   }
 
@@ -61,10 +57,6 @@ export function makeActivityPayload({
   // Build short human-friendly brief
   function buildBrief() {
     const base = verbMap[t] || message || t || 'Activity'
-    if (t === 'mail:sent') {
-      const to = Array.isArray(meta?.to) ? meta.to.join(', ') : (meta?.to || meta?.recipient || '')
-      return to ? `${base} — ${meta?.subject || message} · sent to ${to}` : `${base} — ${meta?.subject || message}`
-    }
     if (t === 'item:add') {
       return itemName ? `${base} — ${itemName}${expiryDate ? ` · Expires ${new Date(expiryDate).toLocaleDateString()}` : ''}` : base
     }
