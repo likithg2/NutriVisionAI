@@ -79,22 +79,28 @@ body {
 }
 
 @layer components {
-  /* LIGHT mode glass: subtle frosted blur */
+  /* LIGHT mode glass: frosted blur */
   .glass {
     background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 4px 24px rgba(210, 170, 130, 0.12), 0 1px 3px rgba(0,0,0,0.04);
     transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
   }
-  /* DARK mode glass: subtle frosted blur */
+  /* DARK mode glass: frosted blur */
   .dark .glass {
     background: rgba(20, 12, 10, 0.70);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
     border: 1px solid rgba(255, 140, 90, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Heavy frosted glass effect with maximum blur */
+  .glass-frosted-full {
+    backdrop-filter: blur(64px) saturate(200%);
+    -webkit-backdrop-filter: blur(64px) saturate(200%);
   }
 
   .shimmer-bg {

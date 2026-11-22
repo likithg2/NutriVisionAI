@@ -86,18 +86,42 @@ function Toast({ msg, type }) {
 
 /* ─── Item Card ─── */
 function ItemCard({ item, onSelect, delay }) {
+  const { dark } = useTheme();
   const days = daysUntil(item.expiryDate);
   const urgColor = days <= 3 ? "text-red-500" : days <= 7 ? "text-amber-500" : "text-green-500";
   
-  let bg = "rgba(34,197,94,0.1)"; // fresh / green
-  if (item.status === "consumed") bg = "rgba(56,189,248,0.15)"; // blue
-  else if (item.status === "partially_consumed") bg = "rgba(245,158,11,0.15)"; // amber
+  // Status-based accent tint for rich frosted glass
+  let tint = "34, 197, 94"; // fresh / green
+  if (item.status === "consumed") tint = "56, 189, 248"; // blue
+  else if (item.status === "partially_consumed") tint = "245, 158, 11"; // amber
+  else if (days <= 3) tint = "239, 68, 68"; // red
+  else if (days <= 7) tint = "245, 158, 11"; // yellow 
 
-  else if (days <= 3) bg = "rgba(239,68,68,0.15)"; // red
-  else if (days <= 7) bg = "rgba(245,158,11,0.15)"; // yellow 
+  const bg = dark
+    ? `linear-gradient(135deg, rgba(${tint}, 0.22) 0%, rgba(20, 12, 10, 0.78) 100%)`
+    : `linear-gradient(135deg, rgba(${tint}, 0.18) 0%, rgba(255, 255, 255, 0.75) 100%)`;
+
+  const border = dark
+    ? `1px solid rgba(${tint}, 0.35)`
+    : `1px solid rgba(${tint}, 0.45)`;
+
+  const cardStyle = {
+    background: bg,
+    border,
+    backdropFilter: "blur(64px) saturate(200%)",
+    WebkitBackdropFilter: "blur(64px) saturate(200%)",
+    boxShadow: dark
+      ? "0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08)"
+      : "0 8px 32px rgba(210, 170, 130, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+  };
   
   return (
-    <GlassCard delay={delay} className="group relative cursor-pointer hover:shadow-lg hover:scale-[1.02]" style={{ background: bg }} onClick={() => onSelect(item)}>
+    <GlassCard 
+      delay={delay} 
+      className="group relative cursor-pointer hover:shadow-2xl hover:scale-[1.02] backdrop-blur-[64px] glass-frosted-full transition-all duration-300" 
+      style={cardStyle} 
+      onClick={() => onSelect(item)}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
