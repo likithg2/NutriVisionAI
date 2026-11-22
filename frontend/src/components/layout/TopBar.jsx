@@ -1,14 +1,23 @@
+import { useState, useEffect } from "react";
 import { Sun, Moon, Bell, Search } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { getAvatarUrl } from "../../utils/avatar.js";
 
 export default function TopBar({ sidebarWidth }) {
   const { dark, toggle } = useTheme();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatarUrl]);
+
   const initials = user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2) : "?";
+  const avatarSrc = getAvatarUrl(user?.avatarUrl);
 
   return (
     <header
@@ -42,9 +51,18 @@ export default function TopBar({ sidebarWidth }) {
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => navigate("/settings")}
-        className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF7A45] to-[#FF4D6D] flex items-center justify-center text-white text-xs font-semibold shadow-orange-500/40"
+        className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF7A45] to-[#FF4D6D] flex items-center justify-center text-white text-xs font-semibold shadow-orange-500/40 overflow-hidden"
       >
-        {initials}
+        {avatarSrc && !avatarError ? (
+          <img 
+            src={avatarSrc} 
+            alt={user?.name || "Avatar"} 
+            className="w-full h-full object-cover" 
+            onError={() => setAvatarError(true)} 
+          />
+        ) : (
+          initials
+        )}
       </motion.button>
     </header>
   );

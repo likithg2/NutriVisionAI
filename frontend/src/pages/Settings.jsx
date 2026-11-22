@@ -7,6 +7,7 @@ import { updateMe, getMe, uploadAvatar, changePassword } from "../api/settings.j
 import Modal from "../components/ui/Modal.jsx";
 // Re-use your axios instance if you add a deleteAccount endpoint to endpoints.js, or write a custom fetch
 import api from '../api/axios.js';
+import { getAvatarUrl } from "../utils/avatar.js";
 
 /* Helper components */
 function GlassCard({ children, className = "" }) {
@@ -109,6 +110,11 @@ export default function Settings() {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatarUrl]);
 
   const [notifPrefs, setNotifPrefs] = useState({ pushExpiry: true, aiInsights: true });
   const [reminderPrefs, setReminderPrefs] = useState({ threeDayWarning: true, oneDayWarning: true, dayOfExpiry: true, weeklyReport: false });
@@ -236,13 +242,12 @@ export default function Settings() {
           <div className="relative group">
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg overflow-hidden"
               style={{ background: "linear-gradient(135deg, #FF6B4A, #D94A3A)", boxShadow: "0 0 24px rgba(255,107,74,0.3)" }}>
-              {user?.avatarUrl ? (
+              {getAvatarUrl(user?.avatarUrl) && !avatarError ? (
                 <img 
-                  src={user.avatarUrl.startsWith('http://') || user.avatarUrl.startsWith('https://') 
-                    ? user.avatarUrl 
-                    : `${(import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')}${user.avatarUrl}`} 
-                  alt="" 
+                  src={getAvatarUrl(user.avatarUrl)} 
+                  alt={profile.name || "Profile"} 
                   className="w-full h-full object-cover" 
+                  onError={() => setAvatarError(true)}
                 />
               ) : initials}
             </div>

@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import Modal from "../ui/Modal.jsx";
 import { getNotifications, getUnreadCount, markMany } from "../../api/notifications.js";
+import { getAvatarUrl } from "../../utils/avatar.js";
 
 function getGoogTransLang() {
   const m = document.cookie.match(/(?:^|;)\s*googtrans=\/en\/([a-z]+)/);
@@ -28,6 +29,13 @@ export default function PillNavbar() {
   const navigate = useNavigate();
   const { dark, toggle } = useTheme();
   const { user } = useAuth();
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatarUrl]);
+
+  const avatarSrc = getAvatarUrl(user?.avatarUrl);
 
   const handleTranslateToggle = useCallback(() => {
     const isKannada = getGoogTransLang() === "kn";
@@ -273,8 +281,13 @@ export default function PillNavbar() {
                 className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-lg overflow-hidden"
                 style={{ background: "linear-gradient(135deg, #FF7A45, #FF4D6D)", boxShadow: "0 4px 14px rgba(255,107,74,0.3)" }}
               >
-                {user?.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                {avatarSrc && !avatarError ? (
+                  <img 
+                    src={avatarSrc} 
+                    alt={user?.name || "Avatar"} 
+                    className="w-full h-full object-cover" 
+                    onError={() => setAvatarError(true)}
+                  />
                 ) : (
                   initials
                 )}

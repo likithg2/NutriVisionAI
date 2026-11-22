@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sun, Moon, ArrowRight, LayoutDashboard, Package, LogOut } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { getAvatarUrl } from "../../utils/avatar.js";
 
 const landingLinks = [
   { label: "About", href: "#about" },
@@ -19,6 +20,13 @@ export default function LandingNavbar() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const isLoggedIn = !!token;
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatarUrl]);
+
+  const avatarSrc = getAvatarUrl(user?.avatarUrl);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -125,11 +133,20 @@ export default function LandingNavbar() {
                 {/* Avatar */}
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                   onClick={handleLogout}
-                  className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center text-white text-xs font-semibold shadow-lg"
+                  className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center text-white text-xs font-semibold shadow-lg overflow-hidden"
                   style={{ background: "linear-gradient(135deg, #FF7A45, #FF4D6D)", boxShadow: "0 4px 14px rgba(255,107,74,0.3)" }}
                   title="Logout"
                 >
-                  {initials}
+                  {avatarSrc && !avatarError ? (
+                    <img 
+                      src={avatarSrc} 
+                      alt={user?.name || "Avatar"} 
+                      className="w-full h-full object-cover" 
+                      onError={() => setAvatarError(true)} 
+                    />
+                  ) : (
+                    initials
+                  )}
                 </motion.button>
               </>
             ) : (
