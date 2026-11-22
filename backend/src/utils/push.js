@@ -75,13 +75,16 @@ async function safeSendNotification(sub, payload) {
 /** Send to a single user (all subscriptions for that user) */
 export async function sendPushToUser(userId, title = 'Notification', body = '') {
   if (!pub || !priv) {
-    console.warn('[push] VAPID keys not configured, abort sendPushToUser');
+    // Warning already emitted once at module load — stay silent here to avoid spam
     return;
   }
   const payload = { title, body };
   const subs = listSubscriptionsForUser(userId);
   if (!subs.length) {
-    console.log('[push] no subscriptions for user', String(userId).replace(/[\r\n]/g, ''));
+    // No push subs for this user is normal; skip noisy log in production
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[push] no subscriptions for user', String(userId).replace(/[\r\n]/g, ''));
+    }
     return;
   }
   await Promise.all(subs.map(s => safeSendNotification(s, payload).catch(() => {})));
@@ -90,7 +93,7 @@ export async function sendPushToUser(userId, title = 'Notification', body = '') 
 /** Broadcast to all known subscriptions (use carefully) */
 export async function sendPushToAll(title = 'Notification', body = '') {
   if (!pub || !priv) {
-    console.warn('[push] VAPID keys not configured, abort sendPushToAll');
+    // Warning already emitted at module load
     return;
   }
   const payload = { title, body };
